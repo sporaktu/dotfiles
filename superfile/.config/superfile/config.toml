@@ -4,7 +4,7 @@
 theme = 'catppuccin'
 # 
 # The editor files/directories will be opened with. (leave blank to use the EDITOR environment variable).
-editor = ""
+editor = "nvim"
 #
 # Auto check for update
 auto_check_update = true
@@ -27,7 +27,7 @@ file_size_use_si = false
 nerdfont = true
 #
 # Set transparent background or not (this only work when your terminal background is transparent)
-transparent_background = false
+transparent_background = true
 # 
 # File preview width allow '0' (this mean same as file panel),'x' x must be less than 10 and greater than 1 (This means that the width of the file preview will be one xth of the total width.)
 file_preview_width = 0
