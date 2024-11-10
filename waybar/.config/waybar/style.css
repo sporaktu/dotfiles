@@ -9,7 +9,7 @@
 
 window#waybar {
     background: transparent;
-    background-color: @crust;
+    /* background-color: @crust; */
     color: @overlay0;
     transition-property: background-color;
     transition-duration: 0.1s;
@@ -65,47 +65,47 @@ button:hover {
 #wireplumber,
 #tray,
 #network,
+#bluetooth,
 #mode,
 #scratchpad {
-  margin-top: 2px;
-  margin-bottom: 2px;
-  margin-left: 4px;
-  margin-right: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
+  margin: 2px 4px;
+  padding: 2px 4px;
+  background-color: lightblue;
+  border-radius: 4px;
+  color: black;
 }
 
 #clock {
-    color: @maroon;
+    background-color: @maroon;
     border-bottom: 2px solid @maroon;
 }
 
 #clock.date {
-    color: @mauve;
+    background-color: @mauve;
     border-bottom: 2px solid @mauve;
 }
 
 #pulseaudio {
-    color: @blue;
+    background-color: @blue;
     border-bottom: 2px solid @blue;
 }
 
 #network {
-    color: @yellow;
+    background-color: @yellow;
     border-bottom: 2px solid @yellow;
 }
 
 #idle_inhibitor {
     margin-right: 12px;
-    color: #7cb342;
+    background-color: #7cb342;
 }
 
 #idle_inhibitor.activated {
-    color: @red;
+    background-color: @red;
 }
 
 #battery {
-    color: @green;
+    background-color: @green;
     border-bottom: 2px solid @green;
 }
 
@@ -120,7 +120,7 @@ button:hover {
 }
 
 #custom-vpn {
-    color: @lavender;
+    background-color: @lavender;
     border-radius: 15px;
     padding-left: 6px;
     padding-right: 6px;
