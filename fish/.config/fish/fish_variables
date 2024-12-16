@@ -1,6 +1,10 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
+SETUVAR --export CC:/usr/bin/gcc\x2d13
+SETUVAR --export CXX:/usr/bin/g\x2b\x2b\x2d13
 SETUVAR --export EDITOR:nvim
+SETUVAR --export --path LD_LIBRARY_PATH:/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64\x1e/opt/cuda/lib64
+SETUVAR --export --path PATH:/opt/cuda/bin\x1e/home/gray/\x2ebun/bin\x1e/usr/bin\x1e/opt/cuda/bin\x1e/home/gray/\x2ebun/bin\x1e/usr/local/sbin\x1e/usr/local/bin\x1e/var/lib/flatpak/exports/bin\x1e/usr/lib/jvm/default/bin\x1e/usr/bin/site_perl\x1e/usr/bin/vendor_perl\x1e/usr/bin/core_perl\x1e/usr/lib/rustup/bin\x1e/home/gray/\x2elocal/share/JetBrains/Toolbox/scripts
 SETUVAR --export VISUAL:nvim
 SETUVAR __done_min_cmd_duration:10000
 SETUVAR __done_notification_urgency_level:low
@@ -33,6 +37,7 @@ SETUVAR fish_pager_color_description:yellow\x1e\x2di
 SETUVAR fish_pager_color_prefix:normal\x1e\x2d\x2dbold\x1e\x2d\x2dunderline
 SETUVAR fish_pager_color_progress:brwhite\x1e\x2d\x2dbackground\x3dcyan
 SETUVAR fish_pager_color_selected_background:\x2dr
+SETUVAR fish_user_paths:/opt/cuda/bin\x1e/usr/bin
 SETUVAR pure_begin_prompt_with_current_directory:true
 SETUVAR pure_check_for_new_release:false
 SETUVAR pure_color_at_sign:pure_color_mute
