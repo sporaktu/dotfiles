@@ -5,9 +5,10 @@
 #    echo "System Information:"
 #    uname -a
 # end
+fish_add_path /opt/homebrew/bin
 
 set -Ux EDITOR nvim
 set -Ux VISUAL nvim
-set -U fish_user_paths /usr/bin $fish_user_paths
+set -U fish_user_paths /opt/homebrew/bin/fish $fish_user_paths
 starship init fish | source
 
