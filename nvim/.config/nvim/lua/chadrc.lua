@@ -14,6 +14,13 @@ M.base46 = {
 	-- },
 }
 
+M.mappings = {
+  n = {
+    gd = { "<cmd>lua vim.lsp.buf.definition()<CR>", "Go to definition" },
+    gr = { "<cmd>lua vim.lsp.buf.references()<CR>", "References" },
+    ["<leader>fg"] = { "<cmd>Telescope live_grep<CR>", "Live grep (rg)" },
+  },
+}
 -- M.nvdash = { load_on_startup = true }
 -- M.ui = {
 --       tabufline = {
