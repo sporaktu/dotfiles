@@ -1,0 +1,7 @@
+[mgr]
+show_hidden = true
+ratio = [1, 3, 5]
+
+[[plugin.prepend_previewers]]
+name = "*.md"
+run = 'piper -- glow -s dark "$1"'
