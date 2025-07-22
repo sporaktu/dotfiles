@@ -31,9 +31,12 @@ function notes
     # Create the full file path
     set -l filepath "$notes_dir/$date_dir/$filename"
     
-    # Create the file with header
-    echo $header > $filepath
-    echo "" >> $filepath
+    # Create the file with header if it doesn't exist
+    if not test -f $filepath
+        touch $filepath
+        echo $header > $filepath
+        echo "" >> $filepath
+    end
     
     # Open neovim with the file
     nvim $filepath
