@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 
-compute PCT
 COLOR="$CYAN"
 
 sketchybar --add item ram right \
     --set ram \
         update_freq=5 \
-        icon="" \
+        icon="󰍛" \
         icon.color="$COLOR" \
         icon.padding_left=10 \
-        label="${PCT}%" \
         label.color="$COLOR" \
         label.padding_right=10 \
         background.height=26 \
@@ -20,4 +18,4 @@ sketchybar --add item ram right \
         background.color="$BAR_COLOR" \
         background.drawing=on \
         script="$PLUGIN_DIR/ram.sh" \
-    --subscribe ram system_woke  # optional, to force-update on wake
+    --subscribe ram system_woke

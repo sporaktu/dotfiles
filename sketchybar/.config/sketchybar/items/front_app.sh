@@ -16,5 +16,4 @@ sketchybar \
 	label.color="$COLOR" \
 	label.padding_left=10 \
 	label.padding_right=10 \
-	associated_display=active \
 	--subscribe front_app front_app_switched
