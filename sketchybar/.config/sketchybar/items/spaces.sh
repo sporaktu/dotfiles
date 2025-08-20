@@ -12,7 +12,7 @@ sketchybar --add item spacer.1 left \
 sketchybar --add item space_info_1 left \
 	--set space_info_1 \
 	associated_display=1 \
-	icon="󱋊" \
+	icon="󰍹" \
 	icon.color="$COLOR" \
 	icon.padding_left=10 \
 	icon.padding_right=5 \
@@ -32,7 +32,7 @@ sketchybar --add item space_info_1 left \
 sketchybar --add item space_info_2 left \
 	--set space_info_2 \
 	associated_display=2 \
-	icon="󱋊" \
+	icon="󰍹" \
 	icon.color="$COLOR" \
 	icon.padding_left=10 \
 	icon.padding_right=5 \
@@ -52,7 +52,7 @@ sketchybar --add item space_info_2 left \
 sketchybar --add item space_info_3 left \
 	--set space_info_3 \
 	associated_display=3 \
-	icon="󱋊" \
+	icon="󰍹" \
 	icon.color="$COLOR" \
 	icon.padding_left=10 \
 	icon.padding_right=5 \
