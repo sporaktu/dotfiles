@@ -17,4 +17,5 @@ sketchybar \
 	background.color="$BAR_COLOR" \
 	background.drawing=on \
 	script="$PLUGIN_DIR/sound.sh" \
+	click_script="$HOME/.config/sketchybar/scripts/open_audio_app.sh" \
 	--subscribe sound volume_change

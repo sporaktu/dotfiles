@@ -18,4 +18,5 @@ sketchybar --add item ram right \
         background.color="$BAR_COLOR" \
         background.drawing=on \
         script="$PLUGIN_DIR/ram.sh" \
+        click_script="open -a 'Activity Monitor'" \
     --subscribe ram system_woke

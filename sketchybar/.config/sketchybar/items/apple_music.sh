@@ -19,4 +19,5 @@ sketchybar --add item apple_music left \
 	label.max_chars=23 \
 	update_freq=2 \
 	updates=on \
-	script="$PLUGIN_DIR/apple_music.sh"
+	script="$PLUGIN_DIR/apple_music.sh" \
+	click_script="open -a 'Music'"
