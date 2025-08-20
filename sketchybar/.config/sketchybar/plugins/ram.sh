@@ -21,4 +21,4 @@ USED_MB=$(( USED_BYTES / 1024 / 1024 ))                                       # 
 PCT=$(( USED_MB * 100 / TOTAL_MB ))                                           #  [oai_citation:10‡superuser.com](https://superuser.com/questions/1107473/vm-stat-displays-less-memory-than-in-real?utm_source=chatgpt.com)
 
 # Output for SketchyBar
-echo "${PCT}%"
+sketchybar --set "$NAME" icon="󰍛" label="${PCT}%"
