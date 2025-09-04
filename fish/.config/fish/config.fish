@@ -10,5 +10,7 @@ fish_add_path $HOME/.volta/bin
 set -Ux EDITOR nvim
 set -Ux VISUAL nvim
 set -U fish_user_paths /opt/homebrew/bin/fish $fish_user_paths
+alias localllama="python3 ~/claude_local.py"
+
 starship init fish | source
 
