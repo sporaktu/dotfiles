@@ -5,34 +5,33 @@ source "$HOME/.config/sketchybar/variables.sh"
 # Get the display number from the widget name (e.g., "space_info_1" -> display 1)
 DISPLAY_ID="${NAME##*_}"
 
-# Get all spaces for this display with their indices
-SPACES_DATA=$(yabai -m query --spaces --display "$DISPLAY_ID" | jq -r '.[] | .index')
+# Get the focused/visible workspace for this monitor
+FOCUSED_WORKSPACE=$(aerospace list-workspaces --monitor "$DISPLAY_ID" --visible 2>/dev/null | head -1)
 
-if [[ -z "$SPACES_DATA" ]]; then
-    sketchybar --set "$NAME" label="1/1"
+# Get all workspaces assigned to this monitor
+ALL_WORKSPACES=$(aerospace list-workspaces --monitor "$DISPLAY_ID" 2>/dev/null)
+
+if [[ -z "$ALL_WORKSPACES" ]]; then
+    sketchybar --set "$NAME" label="—"
     exit 0
 fi
 
-# Convert to array and get total count
-SPACES_ARRAY=($SPACES_DATA)
-TOTAL_SPACES=${#SPACES_ARRAY[@]}
-
-# Get the currently focused space globally
-CURRENT_FOCUSED_SPACE=$(yabai -m query --spaces | jq -r '.[] | select(."has-focus" == true) | .index')
-
-# Find the position of the current focused space within this display's spaces
-CURRENT_POSITION=0
-for i in "${!SPACES_ARRAY[@]}"; do
-    if [[ "${SPACES_ARRAY[$i]}" == "$CURRENT_FOCUSED_SPACE" ]]; then
-        CURRENT_POSITION=$((i + 1))  # 1-based indexing
-        break
+# Build the label showing all workspaces with active one highlighted
+# Format: "1  2  [3]  4" where [3] is the active workspace
+LABEL=""
+while IFS= read -r ws; do
+    if [[ -n "$ws" ]]; then
+        if [[ "$ws" == "$FOCUSED_WORKSPACE" ]]; then
+            # Active workspace - highlighted with brackets
+            LABEL+="[$ws] "
+        else
+            # Inactive workspace
+            LABEL+="$ws  "
+        fi
     fi
-done
+done <<< "$ALL_WORKSPACES"
 
-# If current focused space is not on this display, show first space
-if [[ "$CURRENT_POSITION" == "0" ]]; then
-    CURRENT_POSITION="1"
-fi
+# Trim trailing whitespace
+LABEL="${LABEL% }"
 
-# Update the widget
-sketchybar --set "$NAME" label="$CURRENT_POSITION/$TOTAL_SPACES"
+sketchybar --set "$NAME" label="$LABEL"

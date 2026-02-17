@@ -1,0 +1,228 @@
+# AeroSpace Configuration
+# Converted from yabai config
+# See: https://nikitabobko.github.io/AeroSpace/guide
+
+# ===== Core Settings =====
+
+# Start AeroSpace at login
+start-at-login = true
+
+# Normalization settings (flatten nested containers for simpler tree structure)
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# Accordion padding (space between accordion windows)
+accordion-padding = 30
+
+# Default layout: tiles (like yabai's bsp)
+default-root-container-layout = 'tiles'
+
+# Auto-orientation based on monitor dimensions (wide = horizontal, tall = vertical)
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus - disabled to prevent cursor jumping on sketchybar clicks
+# Uncomment if you want mouse to follow keyboard-based focus changes:
+# on-focus-changed = ['move-mouse monitor-lazy-center']
+on-focus-changed = []
+
+# Commands to run after AeroSpace startup
+after-startup-command = []
+
+# Callback for workspace changes (useful for sketchybar integration)
+exec-on-workspace-change = [
+    '/bin/bash', '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
+# ===== Workspace to Monitor Assignment =====
+# Assign workspaces to specific monitors for predictable window movement
+# Use monitor ID numbers (aerospace list-monitors) or patterns
+# Current setup: 1=Built-in, 2=LG TV, 3=PHL
+[workspace-to-monitor-force-assignment]
+1 = 2                # LG TV (main external)
+2 = 2
+3 = 2
+4 = 2
+5 = 3                # PHL monitor
+6 = 3
+7 = 3
+8 = 1                # Built-in display
+9 = 1
+10 = 1               # Additional workspaces
+11 = 2
+12 = 3
+
+# ===== Gaps Configuration =====
+# Converted from yabai: inner=4, left=4, right=4, bottom=60, top varies by display
+
+[gaps]
+inner.horizontal = 4
+inner.vertical = 4
+outer.left = 4
+outer.right = 4
+outer.bottom = 60
+
+# Per-monitor top gaps: external monitors get space for sketchybar, built-in gets minimal
+outer.top = [
+    { monitor."Built-in" = 10 },
+    48
+]
+
+# ===== Window Detection Rules =====
+# Converted from yabai rules - apps that should float instead of tile
+
+# System dialogs and preferences
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+if.window-title-regex-substring = '(Copy|Connect|Move|Info|Pref)'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+if.window-title-regex-substring = '^(General|Tabs|Passwords|Websites|Extensions|AutoFill|Search|Security|Privacy|Advanced)$'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.AppStore'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'org.keepassxc.keepassxc'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Dictionary'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'io.mpv'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.window-title-regex-substring = 'Software Update'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.SystemInformation'
+if.window-title-regex-substring = 'About This Mac'
+run = 'layout floating'
+
+# macOS system UI elements
+[[on-window-detected]]
+if.app-id = 'com.apple.controlcenter'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.notificationcenterui'
+run = 'layout floating'
+
+# macfeh image viewer
+[[on-window-detected]]
+if.app-id = 'org.nulana.macfeh'
+run = 'layout floating'
+
+# ===== Key Bindings =====
+# Using Alt as the main modifier (like i3 default)
+
+[mode.main.binding]
+
+# Focus navigation (vim-style)
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+# Move windows (vim-style with shift)
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+
+# Workspace navigation (switch workspace on monitor under cursor)
+alt-1 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 1'
+alt-2 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 2'
+alt-3 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 3'
+alt-4 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 4'
+alt-5 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 5'
+alt-6 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 6'
+alt-7 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 7'
+alt-8 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 8'
+alt-9 = 'exec-and-forget ~/.config/aerospace/scripts/workspace-on-mouse-monitor.sh 9'
+
+# Move window to workspace
+alt-shift-1 = 'move-node-to-workspace 1'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-shift-3 = 'move-node-to-workspace 3'
+alt-shift-4 = 'move-node-to-workspace 4'
+alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-6 = 'move-node-to-workspace 6'
+alt-shift-7 = 'move-node-to-workspace 7'
+alt-shift-8 = 'move-node-to-workspace 8'
+alt-shift-9 = 'move-node-to-workspace 9'
+
+# Layout controls
+alt-slash = 'layout tiles horizontal vertical'
+alt-comma = 'layout accordion horizontal vertical'
+alt-f = 'fullscreen'
+
+# Join windows (use instead of split when normalization is enabled)
+alt-shift-v = 'join-with up'
+alt-shift-b = 'join-with left'
+
+# Float/tile toggle
+alt-shift-space = 'layout floating tiling'
+
+# Resize windows
+alt-minus = 'resize smart -50'
+alt-equal = 'resize smart +50'
+
+# Focus monitor
+alt-tab = 'focus-monitor --wrap-around next'
+alt-shift-tab = 'move-node-to-monitor --wrap-around next'
+
+# Workspace back and forth (like i3) - use backtick
+alt-backtick = 'workspace-back-and-forth'
+
+# Enter service/resize mode
+alt-shift-semicolon = 'mode service'
+alt-r = 'mode resize'
+
+# ===== Service Mode =====
+# For less common operations
+
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']
+f = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# Join windows
+alt-shift-h = ['join-with left', 'mode main']
+alt-shift-j = ['join-with down', 'mode main']
+alt-shift-k = ['join-with up', 'mode main']
+alt-shift-l = ['join-with right', 'mode main']
+
+# ===== Resize Mode =====
+# For interactive resizing
+
+[mode.resize.binding]
+h = 'resize width -50'
+j = 'resize height +50'
+k = 'resize height -50'
+l = 'resize width +50'
+minus = 'resize smart -50'
+equal = 'resize smart +50'
+enter = 'mode main'
+esc = 'mode main'
