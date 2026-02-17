@@ -385,6 +385,93 @@ tmux new -s main
 
 For more information on Claude Code agent teams, see [https://code.claude.com/docs/en/agent-teams|https://code.claude.com/docs/en/agent-teams].
 
+h3. Automatic Agent Watcher Panes (Optional — Track A Only)
+
+You can configure Claude Code to automatically open color-coded tmux panes for each background agent. A PostToolUse hook splits your tmux window and shows a live feed of each agent's activity. Panes auto-close when agents complete.
+
+*How it works:*
+
+* A Bash hook fires on every background Task tool call and opens a tmux split pane on the right side
+* A Python watcher tails the agent's JSONL output file, displaying tool calls and text in real time
+* Colors are drawn from the Catppuccin palette to match your terminal theme
+* The first agent splits horizontally (right side); additional agents stack vertically below each other
+
+*Installation:*
+
+{code:language=bash}
+mkdir -p ~/.claude/hooks
+{code}
+
+Create {{~/.claude/hooks/tmux-agent-watcher.sh}}:
+
+{code:language=bash}
+#!/usr/bin/env bash
+set -euo pipefail
+
+INPUT=$(cat)
+
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+if [[ "$TOOL_NAME" != "Task" ]]; then exit 0; fi
+
+IS_ASYNC=$(echo "$INPUT" | jq -r '.tool_response.isAsync // false')
+if [[ "$IS_ASYNC" != "true" ]]; then exit 0; fi
+
+if [[ -z "${TMUX:-}" ]]; then
+    if ! tmux list-sessions &>/dev/null; then exit 0; fi
+fi
+
+OUTPUT_FILE=$(echo "$INPUT" | jq -r '.tool_response.outputFile // empty')
+if [[ -z "$OUTPUT_FILE" ]]; then exit 0; fi
+
+DESCRIPTION=$(echo "$INPUT" | jq -r '.tool_response.description // .tool_input.description // "agent"')
+SAFE_OUTPUT=$(printf '%q' "$OUTPUT_FILE")
+SAFE_DESC=$(printf '%q' "$DESCRIPTION")
+WATCHER_CMD="python3 $HOME/.claude/hooks/watch-agent.py $SAFE_OUTPUT $SAFE_DESC; exit 0"
+
+PANE_COUNT=$(tmux list-panes | wc -l | tr -d ' ')
+if [[ "$PANE_COUNT" -eq 1 ]]; then
+    tmux split-window -h "$WATCHER_CMD"
+    tmux select-pane -L
+else
+    LAST_PANE=$(tmux list-panes -F '#{pane_index}' | tail -1)
+    tmux split-window -v -t "$LAST_PANE" "$WATCHER_CMD"
+    tmux select-pane -t 0
+fi
+exit 0
+{code}
+
+{code:language=bash}
+chmod +x ~/.claude/hooks/tmux-agent-watcher.sh
+{code}
+
+Create {{~/.claude/hooks/watch-agent.py}} — the Python watcher that renders live agent output with Catppuccin colors. See the [full source on GitHub|https://github.com/gray-karegeannes/dotfiles] or copy from your dotfiles repo.
+
+Register the hook in {{~/.claude/settings.json}}:
+
+{code:language=json}
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/tmux-agent-watcher.sh",
+            "async": true,
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+{code}
+
+{note}
+Requires {{jq}} ({{sudo apt install jq}}) and Python 3. This feature only works in Track A (WSL2) since it requires tmux.
+{note}
+
 ----
 
 h2. Step 5: Neovim
