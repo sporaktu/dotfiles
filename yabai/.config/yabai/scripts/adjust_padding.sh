@@ -4,13 +4,19 @@
 # Called when displays change or spaces are created
 
 # Define padding values
-BUILTIN_TOP_PADDING=10   # Minimal padding for built-in display (notch provides space)
-EXTERNAL_TOP_PADDING=48  # Sketchybar height (30) + y_offset (5) + margin (5) + 8px
+BUILTIN_TOP_PADDING=10        # Minimal padding for built-in display (notch provides space)
+EXTERNAL_TOP_PADDING=48       # Sketchybar height (30) + y_offset (5) + margin (5) + 8px
+MAIN_EXTERNAL_TOP_PADDING=0   # Small breathing room; external_bar "main:50:0" already reserves sketchybar space
 
 echo "Adjusting display padding..."
 
 # Get all displays
 displays=$(yabai -m query --displays)
+
+# Get the main (primary) display index - the main display always has its origin at (0,0)
+# external_bar "main:50:0" reserves sketchybar space on this display
+main_display_id=$(echo "$displays" | jq -r 'map(select(.frame.x == 0 and .frame.y == 0)) | .[0].index')
+echo "Detected main display: $main_display_id"
 
 # Find the built-in display by looking for the smallest display
 # Built-in MacBook displays are typically smaller than external monitors
@@ -32,14 +38,18 @@ echo "$displays" | jq -c '.[]' | while read -r display; do
     display_id=$(echo "$display" | jq -r '.index')
     display_width=$(echo "$display" | jq -r '.frame.w')
     spaces=$(echo "$display" | jq -r '.spaces[]')
-    
-    # Determine padding based on whether this is the built-in display
+
+    # Determine padding based on display role
     if [[ "$display_id" == "$builtin_display_id" ]]; then
         # Built-in MacBook display - use minimal padding due to notch
         padding=$BUILTIN_TOP_PADDING
         echo "Setting built-in display $display_id (${display_width}px) to top padding: $padding"
+    elif [[ "$display_id" == "$main_display_id" ]]; then
+        # Main/primary external display - external_bar "main:50:0" already reserves sketchybar space
+        padding=$MAIN_EXTERNAL_TOP_PADDING
+        echo "Setting main external display $display_id (${display_width}px) to top padding: $padding"
     else
-        # External display - use larger padding for sketchybar
+        # Other external display - use larger padding for sketchybar
         padding=$EXTERNAL_TOP_PADDING
         echo "Setting external display $display_id (${display_width}px) to top padding: $padding"
     fi

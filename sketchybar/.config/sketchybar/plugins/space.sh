@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 
-source "$HOME/.config/sketchybar/variables.sh" # Loads all defined colors
+source "$HOME/.config/sketchybar/variables.sh"
 
-SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
-
-SPACE_CLICK_SCRIPT="yabai -m space --focus $SID 2>/dev/null"
-
+# For yabai, SELECTED is provided by sketchybar's space event
 if [ "$SELECTED" = "true" ]; then
-	sketchybar --animate tanh 5 --set "$NAME" \
-		icon.color="$RED" \
-		icon="${SPACE_ICONS[$SID - 1]}" \
-		click_script="$SPACE_CLICK_SCRIPT"
+    sketchybar --animate tanh 5 --set "$NAME" \
+        icon.highlight=on \
+        background.drawing=on \
+        background.border_width=2 \
+        background.border_color="$RED"
 else
-	sketchybar --animate tanh 5 --set "$NAME" \
-		icon.color="$COMMENT" \
-		icon="${SPACE_ICONS[$SID - 1]}" \
-		click_script="$SPACE_CLICK_SCRIPT"
+    sketchybar --animate tanh 5 --set "$NAME" \
+        icon.highlight=off \
+        background.drawing=off \
+        background.border_width=0
 fi

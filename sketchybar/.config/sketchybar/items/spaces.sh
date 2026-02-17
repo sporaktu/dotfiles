@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-COLOR="$RED"
+ACTIVE_COLOR="$RED"
+INACTIVE_COLOR="$COMMENT"
 
 sketchybar --add item spacer.1 left \
 	--set spacer.1 background.drawing=off \
@@ -8,65 +9,30 @@ sketchybar --add item spacer.1 left \
 	icon.drawing=off \
 	width=10
 
-# Create space info widget for display 1
-sketchybar --add item space_info_1 left \
-	--set space_info_1 \
-	associated_display=1 \
-	icon="󰍹" \
-	icon.color="$COLOR" \
-	icon.padding_left=10 \
-	icon.padding_right=5 \
-	label.color="$COLOR" \
-	label.padding_right=10 \
-	background.color="$BAR_COLOR" \
-	background.height=26 \
-	background.corner_radius="$CORNER_RADIUS" \
-	background.border_width="$BORDER_WIDTH" \
-	background.border_color="$COLOR" \
-	background.drawing=on \
-	update_freq=1 \
-	script="$PLUGIN_DIR/space_info.sh" \
-	--subscribe space_info_1 space_change
+# Create spaces for each Mission Control space (up to 10 per display)
+SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
 
-# Create space info widget for display 2  
-sketchybar --add item space_info_2 left \
-	--set space_info_2 \
-	associated_display=2 \
-	icon="󰍹" \
-	icon.color="$COLOR" \
-	icon.padding_left=10 \
-	icon.padding_right=5 \
-	label.color="$COLOR" \
-	label.padding_right=10 \
-	background.color="$BAR_COLOR" \
-	background.height=26 \
-	background.corner_radius="$CORNER_RADIUS" \
-	background.border_width="$BORDER_WIDTH" \
-	background.border_color="$COLOR" \
-	background.drawing=on \
-	update_freq=1 \
-	script="$PLUGIN_DIR/space_info.sh" \
-	--subscribe space_info_2 space_change
+for i in "${!SPACE_ICONS[@]}"; do
+    sid=$((i + 1))
 
-# Create space info widget for display 3
-sketchybar --add item space_info_3 left \
-	--set space_info_3 \
-	associated_display=3 \
-	icon="󰍹" \
-	icon.color="$COLOR" \
-	icon.padding_left=10 \
-	icon.padding_right=5 \
-	label.color="$COLOR" \
-	label.padding_right=10 \
-	background.color="$BAR_COLOR" \
-	background.height=26 \
-	background.corner_radius="$CORNER_RADIUS" \
-	background.border_width="$BORDER_WIDTH" \
-	background.border_color="$COLOR" \
-	background.drawing=on \
-	update_freq=1 \
-	script="$PLUGIN_DIR/space_info.sh" \
-	--subscribe space_info_3 space_change
+    sketchybar --add space space.$sid left \
+        --set space.$sid \
+        space="$sid" \
+        icon="${SPACE_ICONS[i]}" \
+        icon.font="$FONT:Bold:12.0" \
+        icon.color="$INACTIVE_COLOR" \
+        icon.highlight_color="$ACTIVE_COLOR" \
+        icon.padding_left=8 \
+        icon.padding_right=8 \
+        label.drawing=off \
+        background.color="$BAR_COLOR" \
+        background.height=26 \
+        background.corner_radius=8 \
+        background.border_width=0 \
+        background.drawing=off \
+        click_script="yabai -m space --focus $sid" \
+        script="$PLUGIN_DIR/space.sh"
+done
 
 sketchybar --add item separator left \
 	--set separator icon= \

@@ -41,9 +41,13 @@ stow --target=$HOME/.config sketchybar yabai ghostty
 - Plugins: tpm, resurrect, continuum, yank, prefix-highlight
 
 ### Window Management (macOS)
-- **yabai**: Tiling window manager
+- **AeroSpace**: i3-like tiling window manager (primary)
+- **yabai**: Tiling window manager (legacy, requires SIP disable)
 - **sketchybar**: Custom status bar with widgets
-- Config files: `yabai/.config/yabai/yabairc`, `sketchybar/.config/sketchybar/sketchybarrc`
+- Config files:
+  - `aerospace/.config/aerospace/aerospace.toml`
+  - `yabai/.config/yabai/yabairc` (legacy)
+  - `sketchybar/.config/sketchybar/sketchybarrc`
 - Custom scripts in respective `scripts/` and `plugins/` directories
 
 ### Terminal Emulators
@@ -59,9 +63,10 @@ stow --target=$HOME/.config sketchybar yabai ghostty
 
 ### macOS Integration
 - Sketchybar widgets for system monitoring (CPU, RAM, battery, notifications)
-- yabai window management with focus-follows-mouse and custom padding
+- AeroSpace tiling window manager with i3-like keybindings (Alt+hjkl)
+- yabai (legacy) window management with focus-follows-mouse and custom padding
 - App-specific rules for excluding applications from tiling
-- Display-aware padding adjustment via custom scripts
+- Display-aware padding adjustment (built-in vs external monitors)
 
 ### Cross-Platform Support
 - Platform-specific package installation in `install.sh`
@@ -76,6 +81,7 @@ stow --target=$HOME/.config sketchybar yabai ghostty
 3. Restart applications or reload configs as needed:
    - Fish: `source ~/.config/fish/config.fish`
    - tmux: `tmux source-file ~/.config/tmux/tmux.conf`
+   - AeroSpace: Config reloads automatically, or use `Alt+Shift+;` then `Esc`
    - yabai: `yabai --restart-service`
    - sketchybar: `sketchybar --reload`
 
@@ -92,6 +98,7 @@ stow --target=$HOME/.config sketchybar yabai ghostty
 - Git (for repository management)
 
 ### macOS Specific
+- AeroSpace (via Homebrew: `brew install --cask nikitabobko/tap/aerospace`)
 - yabai, sketchybar (via Homebrew)
 - Nerd Fonts (MesloLGS, CaskaydiaCove)
 
