@@ -1,0 +1,658 @@
+h1. Linux Terminal Environment Setup Guide
+
+{toc}
+
+{info}
+This guide walks through setting up a modern, productive Linux terminal environment from scratch. It covers Fish shell, Ghostty terminal, tmux, Neovim, Starship prompt, Yazi file manager, and Volta (Node.js version manager). Target audience: developers setting up a new Linux machine.
+{info}
+
+----
+
+h2. 1. Fish Shell
+
+Fish is a smart, user-friendly command line shell with features like autosuggestions, syntax highlighting, and tab completions that work out of the box.
+
+h3. Installation
+
+{note}
+On Ubuntu/Debian, the default apt repository may ship an outdated version of Fish. Add the official PPA first.
+{note}
+
+*Ubuntu/Debian (with PPA):*
+{code:language=bash}
+sudo apt-add-repository ppa:fish-shell/release-3
+sudo apt update
+sudo apt install fish
+{code}
+
+*Arch Linux:*
+{code:language=bash}
+sudo pacman -S fish
+{code}
+
+*Fedora:*
+{code:language=bash}
+sudo dnf install fish
+{code}
+
+h3. Set Fish as Default Shell
+
+{code:language=bash}
+# Add fish to the list of valid login shells
+echo $(which fish) | sudo tee -a /etc/shells
+
+# Change your default shell
+chsh -s $(which fish)
+{code}
+
+{note}
+Log out and back in for the default shell change to take effect.
+{note}
+
+h3. Configuration
+
+Fish reads its configuration from {{~/.config/fish/config.fish}}. Create or edit this file with your preferred settings.
+
+A recommended starting configuration:
+
+{code:language=bash}
+# ~/.config/fish/config.fish
+
+# Volta (Node.js version manager)
+set -gx VOLTA_HOME "$HOME/.volta"
+fish_add_path "$VOLTA_HOME/bin"
+
+# Starship prompt
+starship init fish | source
+{code}
+
+h3. Yazi Shell Wrapper Function
+
+The {{y}} function wraps Yazi so that your working directory follows you when you exit the file manager. Save this as {{~/.config/fish/functions/y.fish}}:
+
+{code:language=bash}
+function y
+    set tmp (mktemp -t "yazi-cwd.XXXXXX")
+    yazi $argv --cwd-file="$tmp"
+    if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+        builtin cd -- "$cwd"
+    end
+    rm -f -- "$tmp"
+end
+{code}
+
+This lets you launch Yazi by typing {{y}} and have your shell {{cd}} into whatever directory you were browsing when you quit.
+
+h3. Verify
+
+{code:language=bash}
+fish --version
+{code}
+
+----
+
+h2. 2. Ghostty Terminal
+
+Ghostty is a fast, GPU-accelerated terminal emulator with native platform integration. It pairs well with tmux for a persistent session workflow.
+
+h3. Installation
+
+Ghostty does not ship in most Linux package managers. Download the official binary or {{.deb}} package from the official site:
+
+[Ghostty Install Docs|https://ghostty.org/docs/install/binary]
+
+For Debian/Ubuntu, download the {{.deb}} and install:
+
+{code:language=bash}
+sudo dpkg -i ghostty_*.deb
+{code}
+
+h3. Configuration
+
+Ghostty reads config from {{~/.config/ghostty/config}}.
+
+{code:language=none}
+# ~/.config/ghostty/config
+
+# Auto-start tmux on launch, creating or attaching to a session named "main"
+command = "tmux new-session -A -s main -c ~ 'fish --login --interactive'"
+
+# Adaptive theme: dark mode uses Catppuccin Frappe, light mode uses Catppuccin Latte
+theme = dark:catppuccin-frappe,light:catppuccin-latte
+{code}
+
+{note}
+Replace {{fish}} and {{tmux}} in the {{command}} value with the full paths from {{which fish}} and {{which tmux}} if Ghostty cannot resolve them from your {{PATH}} at launch time.
+{note}
+
+h3. Catppuccin Themes
+
+Create the themes directory and add both theme files:
+
+{code:language=bash}
+mkdir -p ~/.config/ghostty/themes
+{code}
+
+*~/.config/ghostty/themes/catppuccin-frappe* (dark):
+
+{code:language=none}
+palette = 0=#51576d
+palette = 1=#e78284
+palette = 2=#a6d189
+palette = 3=#e5c890
+palette = 4=#8caaee
+palette = 5=#f4b8e4
+palette = 6=#81c8be
+palette = 7=#a5adce
+palette = 8=#626880
+palette = 9=#e78284
+palette = 10=#a6d189
+palette = 11=#e5c890
+palette = 12=#8caaee
+palette = 13=#f4b8e4
+palette = 14=#81c8be
+palette = 15=#b5bfe2
+background = #303446
+foreground = #c6d0f5
+cursor-color = #f2d5cf
+cursor-text = #232634
+selection-background = #44495d
+selection-foreground = #c6d0f5
+{code}
+
+*~/.config/ghostty/themes/catppuccin-latte* (light):
+
+{code:language=none}
+palette = 0=#5c5f77
+palette = 1=#d20f39
+palette = 2=#40a02b
+palette = 3=#df8e1d
+palette = 4=#1e66f5
+palette = 5=#ea76cb
+palette = 6=#179299
+palette = 7=#acb0be
+palette = 8=#6c6f85
+palette = 9=#d20f39
+palette = 10=#40a02b
+palette = 11=#df8e1d
+palette = 12=#1e66f5
+palette = 13=#ea76cb
+palette = 14=#179299
+palette = 15=#bcc0cc
+background = #eff1f5
+foreground = #4c4f69
+cursor-color = #dc8a78
+cursor-text = #eff1f5
+selection-background = #d8dae1
+selection-foreground = #4c4f69
+{code}
+
+h3. Verify
+
+Launch Ghostty. It should open directly into a tmux session named {{main}}. Run:
+
+{code:language=bash}
+echo $TERM
+tmux display-message -p '#S'
+{code}
+
+The first command should confirm your terminal type and the second should print {{main}}.
+
+----
+
+h2. 3. tmux
+
+tmux is a terminal multiplexer that lets you run multiple terminal sessions within a single window, keep sessions alive after disconnecting, and split panes for multitasking.
+
+h3. Installation
+
+*Ubuntu/Debian:*
+{code:language=bash}
+sudo apt install tmux
+{code}
+
+*Arch Linux:*
+{code:language=bash}
+sudo pacman -S tmux
+{code}
+
+*Fedora:*
+{code:language=bash}
+sudo dnf install tmux
+{code}
+
+h3. Configuration
+
+tmux reads config from {{~/.config/tmux/tmux.conf}}. Create the directory and file:
+
+{code:language=bash}
+mkdir -p ~/.config/tmux
+{code}
+
+{code:language=none}
+# ~/.config/tmux/tmux.conf
+
+# Default shell
+set-option -g default-shell /usr/bin/fish
+set -g default-command "/usr/bin/fish -l"
+
+# Terminal color support
+set -g default-terminal "screen-256color"
+
+# Mouse support
+set -g mouse on
+
+# Change prefix from Ctrl-b to Ctrl-Space
+unbind C-b
+set -g prefix C-Space
+bind C-Space send-prefix
+
+# Vi-style key bindings in copy mode
+setw -g mode-keys vi
+
+# Pane resizing with prefix + hjkl
+bind -r h resize-pane -L 5
+bind -r j resize-pane -D 5
+bind -r k resize-pane -U 5
+bind -r l resize-pane -R 5
+
+# Intuitive split bindings
+bind | split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+# 1-based window and pane indexing
+set -g base-index 1
+setw -g pane-base-index 1
+
+# Status bar styling
+set -g status-bg colour235
+set -g status-fg white
+set -g status-interval 5
+set -g status-left-length 40
+set -g status-right-length 100
+set -g status-left '#[fg=green]#S'
+set -g status-right '#[fg=yellow]%Y-%m-%d #[fg=cyan]%H:%M'
+set-window-option -g window-status-current-style fg=black,bg=green
+
+# Plugins
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+set -g @plugin 'tmux-plugins/tmux-yank'
+
+run '~/.tmux/plugins/tpm/tpm'
+{code}
+
+{note}
+Update the {{default-shell}} and {{default-command}} paths to match the output of {{which fish}} on your system. On some distros, Fish may live at {{/usr/local/bin/fish}} rather than {{/usr/bin/fish}}.
+{note}
+
+h3. Plugin Manager (TPM)
+
+Install [tmux Plugin Manager (TPM)|https://github.com/tmux-plugins/tpm]:
+
+{code:language=bash}
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+{code}
+
+Then start tmux and install the plugins:
+
+{code:language=bash}
+tmux
+# Inside tmux, press:
+# Ctrl-Space + I   (capital I) to install plugins
+{code}
+
+h3. Linux-Specific: xclip for tmux-yank
+
+The {{tmux-yank}} plugin requires {{xclip}} (or {{xsel}}) on Linux to interact with the system clipboard:
+
+{code:language=bash}
+sudo apt install xclip
+{code}
+
+{note}
+On Wayland-based desktops, you may need {{wl-clipboard}} instead: {{sudo apt install wl-clipboard}}
+{note}
+
+h3. Useful tmux Key Bindings
+
+||Key Binding||Action||
+|{{Ctrl-Space}}|Prefix key|
+|{{Ctrl-Space + \|}}|Split pane horizontally|
+|{{Ctrl-Space + -}}|Split pane vertically|
+|{{Ctrl-Space + h/j/k/l}}|Resize pane (repeatable)|
+|{{Ctrl-Space + d}}|Detach from session|
+|{{Ctrl-Space + I}}|Install plugins (TPM)|
+|{{Ctrl-Space + [}}|Enter copy/scroll mode|
+|{{q}}|Exit copy mode|
+
+h3. Using tmux with Claude Code Agent Teams
+
+Claude Code supports running agent teams — subagents that work in parallel on different parts of a task. tmux is the recommended environment for monitoring and managing these agent sessions.
+
+*How it works:*
+
+* Claude Code agent teams use tmux sessions to run background agents
+* Each agent may create or attach to its own named tmux session
+* You can observe an agent's live output by attaching to its session
+
+*Key commands for working with agent sessions:*
+
+{code:language=bash}
+# List all active tmux sessions (agent sessions appear alongside your main session)
+tmux ls
+
+# Attach to an agent's session to observe its work
+tmux attach -t <session-name>
+
+# Detach from an agent session without killing it
+# Press: Ctrl-Space + d
+{code}
+
+*Why this setup helps:*
+
+* The named session approach ({{-s main}}) used in the Ghostty config means Claude Code can reliably attach and detach to known session names without ambiguity
+* The {{tmux-resurrect}} and {{tmux-continuum}} plugins preserve agent sessions across terminal restarts, so long-running agents are not lost if you close your terminal
+* Mouse support ({{set -g mouse on}}) lets you scroll through agent output without entering copy mode
+
+{info}
+For full Claude Code agent teams documentation, see: [Claude Code Agent Teams|https://code.claude.com/docs/en/agent-teams]
+{info}
+
+h3. Verify
+
+{code:language=bash}
+tmux -V
+tmux ls
+{code}
+
+----
+
+h2. 4. Neovim
+
+Neovim is a hyperextensible Vim-based text editor. This guide uses [NvChad|https://nvchad.com/] as a starter configuration, which provides LSP support, a plugin manager (lazy.nvim), and a polished default experience.
+
+h3. Installation
+
+{warning}
+The version of Neovim in the Ubuntu/Debian {{apt}} repository is frequently outdated. Use the unstable PPA or an AppImage for the latest stable release.
+{warning}
+
+*Ubuntu/Debian (PPA — recommended):*
+{code:language=bash}
+sudo add-apt-repository ppa:neovim-ppa/unstable
+sudo apt update
+sudo apt install neovim
+{code}
+
+*Ubuntu/Debian (AppImage — alternative):*
+
+Download the latest AppImage from [Neovim GitHub Releases|https://github.com/neovim/neovim/releases], then:
+
+{code:language=bash}
+chmod +x nvim.appimage
+sudo mv nvim.appimage /usr/local/bin/nvim
+{code}
+
+*Arch Linux:*
+{code:language=bash}
+sudo pacman -S neovim
+{code}
+
+*Fedora:*
+{code:language=bash}
+sudo dnf install neovim
+{code}
+
+h3. Prerequisites
+
+{code:language=bash}
+# Required for Telescope (fuzzy finder) and many LSP workflows
+sudo apt install ripgrep
+
+# Build tools required by some plugins (treesitter, etc.)
+sudo apt install build-essential
+{code}
+
+h3. NvChad Starter Configuration
+
+{code:language=bash}
+# Clone the NvChad starter into your Neovim config directory
+git clone https://github.com/NvChad/starter ~/.config/nvim
+
+# Launch Neovim — lazy.nvim bootstraps automatically and installs all plugins
+nvim
+{code}
+
+{info}
+On first launch, lazy.nvim will install all configured plugins. This may take a minute. Subsequent launches are fast.
+{info}
+
+h3. Installing LSP Servers
+
+Inside Neovim, use Mason to install language servers:
+
+{code:language=none}
+:MasonInstall <server-name>
+
+" Examples:
+:MasonInstall lua-language-server
+:MasonInstall typescript-language-server
+:MasonInstall pyright
+{code}
+
+Run {{:Mason}} to open the Mason UI and browse all available servers, linters, and formatters.
+
+h3. Verify
+
+{code:language=bash}
+nvim --version
+{code}
+
+----
+
+h2. 5. Starship Prompt
+
+[Starship|https://starship.rs/] is a minimal, fast, and highly customizable prompt for any shell. It works out of the box with sensible defaults.
+
+h3. Installation
+
+{code:language=bash}
+curl -sS https://starship.rs/install.sh | sh
+{code}
+
+The installer places the {{starship}} binary at {{/usr/local/bin/starship}}.
+
+h3. Configuration
+
+No custom configuration is required to get a great-looking prompt. Starship uses its built-in defaults.
+
+To enable Starship in Fish, add the following line to {{~/.config/fish/config.fish}}:
+
+{code:language=bash}
+starship init fish | source
+{code}
+
+This should already be present if you followed the Fish configuration section above.
+
+h3. Verify
+
+Open a new terminal (or run {{source ~/.config/fish/config.fish}}) and confirm the Starship prompt is active:
+
+{code:language=bash}
+starship --version
+{code}
+
+----
+
+h2. 6. Yazi File Manager
+
+[Yazi|https://yazi-rs.github.io/] is a blazing fast terminal file manager written in Rust, with image previews, plugin support, and deep integration with tools like fzf, zoxide, and ripgrep.
+
+h3. Dependencies
+
+Install required system dependencies before installing Yazi:
+
+{code:language=bash}
+sudo apt install ffmpegthumbnailer p7zip-full jq poppler-utils fd-find ripgrep fzf zoxide imagemagick
+{code}
+
+Install {{glow}} for Markdown preview support. Download the appropriate binary from [Glow Releases|https://github.com/charmbracelet/glow/releases] and place it on your {{PATH}}:
+
+{code:language=bash}
+sudo mv glow /usr/local/bin/glow
+chmod +x /usr/local/bin/glow
+{code}
+
+h3. Installation
+
+*Arch Linux:*
+{code:language=bash}
+sudo pacman -S yazi
+{code}
+
+*All other distros — via Cargo (requires Rust):*
+{code:language=bash}
+# Install Rust if not already present
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Install Yazi
+cargo install --locked yazi-fm yazi-cli
+{code}
+
+*Binary download (alternative):*
+
+Download the pre-built binary from [Yazi GitHub Releases|https://github.com/sxyazi/yazi/releases] and move it to {{/usr/local/bin/}}.
+
+h3. Configuration
+
+Yazi reads config from {{~/.config/yazi/}}. Create the directory and the main config file:
+
+{code:language=bash}
+mkdir -p ~/.config/yazi
+{code}
+
+*~/.config/yazi/yazi.toml:*
+
+{code:language=sql}
+[mgr]
+show_hidden = true
+ratio = [1, 3, 5]
+
+[[plugin.prepend_previewers]]
+name = "*.md"
+run = 'piper -- glow -s dark "$1"'
+{code}
+
+h3. Plugins
+
+Install the official Yazi plugin collection:
+
+{code:language=bash}
+ya pack -a yazi-rs/plugins:bypass
+ya pack -a yazi-rs/plugins:compress
+ya pack -a yazi-rs/plugins:diff
+ya pack -a yazi-rs/plugins:copy-file-contents
+ya pack -a yazi-rs/plugins:what-size
+ya pack -a yazi-rs/plugins:save-clipboard-to-file
+{code}
+
+h3. Shell Integration
+
+The {{y}} wrapper function (defined in the Fish section above) handles changing your shell's working directory to wherever you navigate in Yazi. After setting it up, use {{y}} instead of {{yazi}} to launch the file manager.
+
+h3. Verify
+
+{code:language=bash}
+yazi --version
+y
+{code}
+
+----
+
+h2. 7. Volta (Node.js Version Manager)
+
+[Volta|https://volta.sh/] is a hassle-free JavaScript toolchain manager. It lets you install and switch Node.js versions on a per-project basis, with no manual {{nvm use}} commands required.
+
+h3. Installation
+
+{code:language=bash}
+curl https://get.volta.sh | bash
+{code}
+
+{note}
+The Volta installer automatically modifies {{~/.bashrc}} and {{~/.profile}} for Bash users. Since we are using Fish shell, the automatic PATH setup will not apply. You must manually add Volta to your Fish config.
+{note}
+
+h3. Fish Shell Integration
+
+Add the following to {{~/.config/fish/config.fish}} (this should already be present if you followed the Fish configuration section):
+
+{code:language=bash}
+set -gx VOLTA_HOME "$HOME/.volta"
+fish_add_path "$VOLTA_HOME/bin"
+{code}
+
+Reload your Fish config:
+
+{code:language=bash}
+source ~/.config/fish/config.fish
+{code}
+
+h3. Install Node.js
+
+{code:language=bash}
+# Install the latest LTS version of Node.js (recommended for most projects)
+volta install node
+{code}
+
+Volta automatically sets this as your default Node.js version. All {{node}}, {{npm}}, and {{npx}} commands will use it.
+
+h3. Per-Project Version Pinning
+
+To pin a specific Node.js version for a project, run the following from within the project directory:
+
+{code:language=bash}
+volta pin node@lts
+{code}
+
+This adds a {{volta}} field to your {{package.json}}, and Volta will automatically use the pinned version whenever you work in that directory.
+
+h3. Verify
+
+{code:language=bash}
+volta --version
+node --version
+npm --version
+{code}
+
+----
+
+h2. Quick Reference
+
+||Tool||Install Command||Config File||Verify||
+|*Fish Shell*|{{sudo apt install fish}} (Ubuntu) / {{sudo pacman -S fish}} (Arch) / {{sudo dnf install fish}} (Fedora)|{{~/.config/fish/config.fish}}|{{fish --version}}|
+|*Ghostty*|Download from [ghostty.org/docs/install/binary|https://ghostty.org/docs/install/binary]|{{~/.config/ghostty/config}}|Launch Ghostty and confirm tmux session|
+|*tmux*|{{sudo apt install tmux}} (Ubuntu) / {{sudo pacman -S tmux}} (Arch) / {{sudo dnf install tmux}} (Fedora)|{{~/.config/tmux/tmux.conf}}|{{tmux -V}}|
+|*Neovim*|{{sudo add-apt-repository ppa:neovim-ppa/unstable && sudo apt install neovim}} (Ubuntu) / {{sudo pacman -S neovim}} (Arch)|{{~/.config/nvim/}}|{{nvim --version}}|
+|*Starship*|{{curl -sS https://starship.rs/install.sh \| sh}}|Defaults only (no config required)|{{starship --version}}|
+|*Yazi*|{{sudo pacman -S yazi}} (Arch) / {{cargo install --locked yazi-fm yazi-cli}} (others)|{{~/.config/yazi/yazi.toml}}|{{yazi --version}}|
+|*Volta*|{{curl https://get.volta.sh \| bash}}|{{~/.config/fish/config.fish}} (PATH only)|{{volta --version}}|
+
+----
+
+h2. Linux-Specific Gotchas
+
+* *tmux-yank clipboard:* Requires {{xclip}} (X11) or {{wl-clipboard}} (Wayland). Install with {{sudo apt install xclip}} or {{sudo apt install wl-clipboard}}.
+* *Outdated Neovim in apt:* The default Ubuntu/Debian {{apt}} repository ships a very old version of Neovim. Always use the {{neovim-ppa/unstable}} PPA or an AppImage from GitHub Releases.
+* *Fish shell PATH:* Volta, Cargo, and other tools that modify {{~/.bashrc}} will not affect Fish automatically. Always add their {{PATH}} entries to {{~/.config/fish/config.fish}} using {{fish_add_path}} or {{set -gx}}.
+* *Ghostty binary path in tmux command:* If Ghostty launches before your Fish environment is fully initialized, {{fish}} and {{tmux}} may not be on the {{PATH}}. Use absolute paths (e.g., {{/usr/bin/fish}}, {{/usr/bin/tmux}}) in the Ghostty {{command}} config option to be safe.
+* *Rust/Cargo for Yazi:* On distros without a packaged Yazi binary, building from source via Cargo requires a recent Rust toolchain. The {{rustup}} installer handles this cleanly.
+* *NvChad first launch:* The initial Neovim launch with NvChad will install many plugins and may appear slow. Subsequent launches will be fast. Ensure you have a working internet connection on first launch.
+* *fd-find vs fd:* On Ubuntu/Debian, the {{fd}} binary is installed as {{fdfind}} to avoid a naming conflict. Create a symlink if needed: {{sudo ln -s $(which fdfind) /usr/local/bin/fd}}

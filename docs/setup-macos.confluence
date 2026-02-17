@@ -1,0 +1,823 @@
+h1. macOS Terminal Environment Setup Guide
+
+A comprehensive guide to setting up a modern, productive terminal development environment on macOS. This guide walks through installing and configuring Fish shell, Ghostty, tmux, Neovim, Starship, Yazi, and Volta from scratch.
+
+*Target audience:* A developer comfortable with terminals who is setting up a new machine.
+
+{note}
+*Note on architecture paths:* All configurations in this guide use Apple Silicon paths ({{/opt/homebrew/bin}}). If you are on an Intel Mac, replace {{/opt/homebrew}} with {{/usr/local}} throughout.
+{note}
+
+----
+
+{toc}
+
+----
+
+h2. 1. Homebrew
+
+Homebrew is the de facto package manager for macOS. Almost everything else in this guide is installed through it, so it must come first.
+
+h3. Install
+
+{code:language=bash}
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+{code}
+
+The installer will prompt you for your password and will install the Xcode Command Line Tools if they are not already present.
+
+After installation, follow the printed instructions to add Homebrew to your PATH. On Apple Silicon, add this to your shell profile:
+
+{code:language=bash}
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+{code}
+
+h3. Verify
+
+{code:language=bash}
+brew --version
+# Expected output: Homebrew 4.x.x (or similar)
+brew doctor
+# Expected output: Your system is ready to brew.
+{code}
+
+----
+
+h2. 2. Fish Shell
+
+Fish (Friendly Interactive SHell) is a modern shell with excellent autosuggestions, syntax highlighting, and tab completions out of the box — no plugins required for the basics. It uses a slightly different scripting syntax than bash/zsh, but for interactive use it is considerably more pleasant.
+
+h3. Install
+
+{code:language=bash}
+brew install fish
+{code}
+
+h3. Add Fish to Allowed Shells
+
+macOS maintains a list of approved shells in {{/etc/shells}}. You must add Fish to this list before you can set it as your default shell.
+
+{code:language=bash}
+echo "/opt/homebrew/bin/fish" | sudo tee -a /etc/shells
+{code}
+
+h3. Set Fish as the Default Shell
+
+{code:language=bash}
+chsh -s /opt/homebrew/bin/fish
+{code}
+
+Log out and back in (or open a new terminal session) for the change to take effect.
+
+h3. Configure Fish
+
+Fish's primary configuration file lives at {{~/.config/fish/config.fish}}. Create it if it does not exist:
+
+{code:language=bash}
+mkdir -p ~/.config/fish
+touch ~/.config/fish/config.fish
+{code}
+
+Below is the complete {{config.fish}} with all integrations (Starship, Volta, and Yazi) included. You can build this up incrementally as you install each tool, or put it all in place at once.
+
+{code:language=bash}
+# ~/.config/fish/config.fish
+
+# ─── Starship Prompt ────────────────────────────────────────────────────────
+# Initializes the Starship prompt. Must come after PATH setup so starship
+# is discoverable. See the Starship section for installation.
+starship init fish | source
+
+# ─── Volta (Node.js Version Manager) ────────────────────────────────────────
+# Volta manages Node.js, npm, and yarn versions per-project automatically.
+# These two lines make the `volta` binary and any installed node/npm/yarn
+# binaries available in Fish.
+set -gx VOLTA_HOME "$HOME/.volta"
+fish_add_path "$VOLTA_HOME/bin"
+
+# ─── Yazi Shell Wrapper ──────────────────────────────────────────────────────
+# This function wraps the `yazi` binary so that when you quit Yazi, your
+# shell's working directory changes to wherever you navigated inside Yazi.
+# Without this wrapper, Yazi cannot change the parent shell's directory on exit
+# because a child process cannot modify its parent's environment.
+#
+# Usage: type `y` instead of `yazi` to get the cd-on-exit behavior.
+function y
+    set tmp (mktemp -t "yazi-cwd.XXXXX")
+    yazi $argv --cwd-file="$tmp"
+    if set cwd (cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+        builtin cd -- "$cwd"
+    end
+    rm -f -- "$tmp"
+end
+{code}
+
+h3. Verify
+
+{code:language=bash}
+fish --version
+# Expected: fish, version 3.x.x
+
+echo $SHELL
+# Expected: /opt/homebrew/bin/fish
+{code}
+
+----
+
+h2. 3. Ghostty Terminal
+
+Ghostty is a fast, feature-rich terminal emulator built in Zig. It supports GPU rendering, native macOS tabs, and has excellent tmux integration. It is configured in a simple key-value format (no TOML or JSON required).
+
+h3. Install
+
+{code:language=bash}
+brew install --cask ghostty
+{code}
+
+h3. Configure
+
+Ghostty's config file lives at {{~/.config/ghostty/config}}. Create it:
+
+{code:language=bash}
+mkdir -p ~/.config/ghostty
+touch ~/.config/ghostty/config
+{code}
+
+{code:language=none}
+# ~/.config/ghostty/config
+
+# Launch tmux on startup, attaching to or creating a session named "main".
+# The session starts in your home directory and uses Fish as the shell inside.
+# The -A flag means "attach if the session exists, create it if not" —
+# so reopening Ghostty always drops you back into your running session.
+command = "/opt/homebrew/bin/tmux new-session -A -s main -c ~ '/opt/homebrew/bin/fish --login --interactive'"
+
+# Use the Catppuccin theme. The dark/light syntax lets Ghostty switch
+# automatically based on your macOS appearance setting.
+theme = dark:catppuccin-frappe,light:catppuccin-latte
+{code}
+
+h3. Install Catppuccin Themes
+
+Ghostty loads themes from {{~/.config/ghostty/themes/}}. Create the directory and add both Catppuccin theme files.
+
+{code:language=bash}
+mkdir -p ~/.config/ghostty/themes
+{code}
+
+*Catppuccin Frappe (dark theme)*
+
+Create {{~/.config/ghostty/themes/catppuccin-frappe}}:
+
+{code:language=none}
+# Catppuccin Frappe for Ghostty
+palette = 0=#51576d
+palette = 1=#e78284
+palette = 2=#a6d189
+palette = 3=#e5c890
+palette = 4=#8caaee
+palette = 5=#f4b8e4
+palette = 6=#81c8be
+palette = 7=#a5adce
+palette = 8=#626880
+palette = 9=#e78284
+palette = 10=#a6d189
+palette = 11=#e5c890
+palette = 12=#8caaee
+palette = 13=#f4b8e4
+palette = 14=#81c8be
+palette = 15=#c6d0f5
+background = 303446
+foreground = c6d0f5
+cursor-color = f2d5cf
+selection-background = 626880
+selection-foreground = c6d0f5
+{code}
+
+*Catppuccin Latte (light theme)*
+
+Create {{~/.config/ghostty/themes/catppuccin-latte}}:
+
+{code:language=none}
+# Catppuccin Latte for Ghostty
+palette = 0=#5c5f77
+palette = 1=#d20f39
+palette = 2=#40a02b
+palette = 3=#df8e1d
+palette = 4=#1e66f5
+palette = 5=#ea76cb
+palette = 6=#179299
+palette = 7=#acb0be
+palette = 8=#6c6f85
+palette = 9=#d20f39
+palette = 10=#40a02b
+palette = 11=#df8e1d
+palette = 12=#1e66f5
+palette = 13=#ea76cb
+palette = 14=#179299
+palette = 15=#bcc0cc
+background = eff1f5
+foreground = 4c4f69
+cursor-color = dc8a78
+selection-background = acb0be
+selection-foreground = 4c4f69
+{code}
+
+h3. Verify
+
+Launch Ghostty from Spotlight or the Applications folder. It should open directly into a tmux session named "main" (tmux must be installed first — see next section). The color scheme will match your macOS light/dark mode setting.
+
+----
+
+h2. 4. tmux
+
+tmux is a terminal multiplexer: it lets you run multiple terminal sessions inside a single window, detach from sessions (leaving processes running in the background), and reattach later. With tmux Resurrect and Continuum, your sessions persist across reboots.
+
+h3. Install
+
+{code:language=bash}
+brew install tmux
+{code}
+
+h3. Install TPM (tmux Plugin Manager)
+
+TPM handles downloading and managing tmux plugins.
+
+{code:language=bash}
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+{code}
+
+h3. Configure
+
+tmux reads its config from {{~/.config/tmux/tmux.conf}}. Create it:
+
+{code:language=bash}
+mkdir -p ~/.config/tmux
+{code}
+
+{code:language=none}
+# ~/.config/tmux/tmux.conf
+
+# ─── Shell ──────────────────────────────────────────────────────────────────
+# Use Fish as the default shell inside tmux panes. The `-l` flag ensures
+# Fish is started as a login shell so all profile setup runs correctly.
+set-option -g default-shell /opt/homebrew/bin/fish
+set -g default-command "/opt/homebrew/bin/fish -l"
+
+# ─── Terminal Colors ─────────────────────────────────────────────────────────
+# Tell tmux to advertise 256-color support to programs running inside it.
+# This is important for Neovim themes and other color-aware tools.
+set -g default-terminal "screen-256color"
+
+# ─── Mouse Support ──────────────────────────────────────────────────────────
+# Enable mouse for scrolling, pane selection, and resizing.
+set -g mouse on
+
+# ─── Prefix Key ─────────────────────────────────────────────────────────────
+# Replace the default Ctrl-b prefix with Ctrl-Space.
+# Ctrl-b requires a full hand movement; Ctrl-Space is more ergonomic.
+unbind C-b
+set -g prefix C-Space
+bind C-Space send-prefix
+
+# ─── Vi Mode ────────────────────────────────────────────────────────────────
+# Use vi-style keybindings in copy mode (scrollback buffer navigation).
+setw -g mode-keys vi
+
+# ─── Pane Resizing ──────────────────────────────────────────────────────────
+# Resize panes with prefix + h/j/k/l (vi-style, 5 cells at a time).
+# The -r flag makes these repeatable without re-pressing the prefix.
+bind -r h resize-pane -L 5
+bind -r j resize-pane -D 5
+bind -r k resize-pane -U 5
+bind -r l resize-pane -R 5
+
+# ─── Pane Splitting ─────────────────────────────────────────────────────────
+# More intuitive split keys: | for vertical split, - for horizontal split.
+# Unbind the defaults first to keep things clean.
+bind | split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+# ─── Indexing ───────────────────────────────────────────────────────────────
+# Start window and pane numbering at 1 instead of 0.
+# This makes the number row on the keyboard match window order naturally.
+set -g base-index 1
+setw -g pane-base-index 1
+
+# ─── Status Bar ─────────────────────────────────────────────────────────────
+set -g status-bg colour235
+set -g status-fg white
+set -g status-interval 5
+set -g status-left-length 40
+set -g status-right-length 100
+set -g status-left '#[fg=green]#S'
+set -g status-right '#[fg=yellow]%Y-%m-%d #[fg=cyan]%H:%M'
+set-window-option -g window-status-current-style fg=black,bg=green
+
+# ─── Plugins ────────────────────────────────────────────────────────────────
+# tpm: Plugin manager itself
+set -g @plugin 'tmux-plugins/tpm'
+
+# tmux-sensible: A set of sensible tmux options everyone can agree on
+set -g @plugin 'tmux-plugins/tmux-sensible'
+
+# tmux-resurrect: Save and restore tmux sessions across reboots
+#   prefix + Ctrl-s  →  save session
+#   prefix + Ctrl-r  →  restore session
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+
+# tmux-continuum: Automatically saves the session every 15 minutes
+#   and restores it on tmux server start
+set -g @plugin 'tmux-plugins/tmux-continuum'
+
+# tmux-prefix-highlight: Highlights the status bar when the prefix is active
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
+
+# tmux-yank: Copy to system clipboard in copy mode (vi yank with `y`)
+set -g @plugin 'tmux-plugins/tmux-yank'
+
+# ─── Initialize TPM ─────────────────────────────────────────────────────────
+# This line MUST stay at the very bottom of tmux.conf.
+run '~/.tmux/plugins/tpm/tpm'
+{code}
+
+h3. Install Plugins
+
+Start tmux (or source the config in an existing session):
+
+{code:language=bash}
+tmux
+# Inside tmux, source the config:
+tmux source-file ~/.config/tmux/tmux.conf
+{code}
+
+Then press {{Ctrl-Space + I}} (capital I) to install all plugins. TPM will clone each plugin and print a success message when done.
+
+h3. Verify
+
+{code:language=bash}
+tmux -V
+# Expected: tmux 3.x
+{code}
+
+Inside a tmux session, verify plugins are loaded by checking that {{~/.tmux/plugins/}} contains subdirectories for each plugin.
+
+h3. Using tmux with Claude Code Agent Teams
+
+Claude Code supports running agent teams — subagents that execute tasks in parallel across separate sessions. tmux is the recommended tool for managing and monitoring these agents.
+
+*How it works:*
+
+* Claude Code spawns background agents, each running inside its own named tmux session
+* The {{tmux-resurrect}} and {{tmux-continuum}} plugins preserve agent sessions across terminal restarts
+* Named sessions (e.g. {{-s main}}) allow Claude Code to reliably attach and detach to known sessions
+
+*Useful commands:*
+
+|| Command || Description ||
+| {{tmux ls}} | List all active sessions, including any running agent sessions |
+| {{tmux attach -t <session-name>}} | Attach to an agent session to observe its live output |
+| {{Ctrl-Space + d}} | Detach from a session without stopping the agent |
+| {{tmux kill-session -t <session-name>}} | Stop a specific agent session |
+
+{info}
+Because Ghostty is configured to launch tmux with {{-A -s main}}, your terminal will always attach to the {{main}} session. Agent sessions run alongside it under different names.
+{info}
+
+For full Claude Code agent teams documentation, see [Claude Code Agent Teams|https://code.claude.com/docs/en/agent-teams].
+
+----
+
+h2. 5. Neovim
+
+Neovim is a modernized Vim fork with built-in LSP support, Lua scripting, and a rich plugin ecosystem. This setup uses NvChad as a base framework, which provides a curated set of defaults and a plugin configuration layer on top of lazy.nvim.
+
+h3. Install
+
+{code:language=bash}
+brew install neovim
+# ripgrep is required for Telescope's live grep functionality
+brew install ripgrep
+{code}
+
+h3. Install NvChad
+
+NvChad provides the base configuration framework. Clone its starter template into your Neovim config directory:
+
+{code:language=bash}
+git clone https://github.com/NvChad/starter ~/.config/nvim
+{code}
+
+h3. First Launch
+
+Open Neovim. lazy.nvim will bootstrap itself and install all plugins automatically. This may take a minute or two on first run.
+
+{code:language=bash}
+nvim
+{code}
+
+Wait for the installation to complete. You will see a progress window showing each plugin being installed.
+
+h3. Customize the Theme
+
+NvChad uses a theme system called base46. To set zenburn as your theme, open the NvChad theme picker inside Neovim:
+
+{code:language=none}
+<Space> + t + h
+{code}
+
+Search for "zenburn" and select it. NvChad saves the selection automatically.
+
+Alternatively, set it in {{~/.config/nvim/lua/chadrc.lua}}:
+
+{code:language=none}
+-- ~/.config/nvim/lua/chadrc.lua
+local M = {}
+
+M.base46 = {
+  theme = "zenburn",
+}
+
+return M
+{code}
+
+h3. Install LSP Servers
+
+NvChad includes Mason, a package manager for LSP servers, linters, and formatters. Inside Neovim, run:
+
+{code:language=none}
+:MasonInstall html-lsp css-lsp omnisharp typescript-language-server
+{code}
+
+Or open the Mason UI with {{:Mason}} and install servers interactively.
+
+*Key LSP servers for this setup:*
+
+|| Server || Language || Mason name ||
+| html-lsp | HTML | {{html-lsp}} |
+| cssls | CSS/SCSS | {{css-lsp}} |
+| omnisharp | C# | {{omnisharp}} |
+| tsserver | TypeScript/JS/TSX | {{typescript-language-server}} |
+
+h3. Key Plugins Included via NvChad
+
+* *telescope.nvim* — fuzzy finder for files, buffers, grep results
+* *nvim-treesitter* — syntax highlighting for C#, TypeScript, JavaScript, TSX, Lua, and more
+* *nvim-lspconfig* — LSP client configuration
+* *nvim-cmp* — autocompletion engine
+* *conform.nvim* — code formatting
+* *nvim-dap* — debug adapter protocol for interactive debugging
+
+h3. Verify
+
+{code:language=bash}
+nvim --version
+# Expected: NVIM v0.10.x (or later)
+{code}
+
+Inside Neovim:
+* {{:checkhealth}} — runs a full diagnostic report
+* {{:Mason}} — opens the LSP/tool installer
+* {{:Lazy}} — opens the plugin manager
+
+----
+
+h2. 6. Starship Prompt
+
+Starship is a minimal, fast, and customizable prompt written in Rust. It works with any shell and shows contextual information (git branch, language version, exit codes) without requiring you to configure anything to get a useful setup.
+
+h3. Install
+
+{code:language=bash}
+brew install starship
+{code}
+
+h3. Configure Fish Integration
+
+The initialization line was already included in the {{config.fish}} shown in the Fish section:
+
+{code:language=bash}
+starship init fish | source
+{code}
+
+This line tells Fish to run {{starship init}} at shell startup. Starship hooks into the prompt and renders it before each command.
+
+No custom {{starship.toml}} is needed — the defaults are sensible and look great. If you want to customize later, the config lives at {{~/.config/starship.toml}}. See the [Starship documentation|https://starship.rs/] for the full list of modules and options.
+
+h3. Verify
+
+Open a new Fish shell session. Your prompt should now show the Starship-rendered prompt. Navigate into a git repository:
+
+{code:language=bash}
+cd ~/dotfiles
+{code}
+
+You should see the current branch name appear in the prompt automatically.
+
+----
+
+h2. 7. Yazi File Manager
+
+Yazi is a blazing fast terminal file manager written in Rust. It supports image previews in the terminal, video thumbnails, PDF previews, and an extensible plugin system. The {{y}} shell wrapper function (added to {{config.fish}} above) makes Yazi change your shell's working directory when you quit — the feature that makes it genuinely useful as a navigation tool.
+
+h3. Install Yazi and Dependencies
+
+{code:language=bash}
+brew install yazi
+
+# Required and recommended dependencies for previews and features:
+brew install ffmpegthumbnailer  # Video thumbnails
+brew install sevenzip           # Archive previews
+brew install jq                 # JSON processing
+brew install poppler            # PDF previews
+brew install fd                 # Fast file finder (used internally)
+brew install ripgrep            # Content search
+brew install fzf                # Fuzzy finder integration
+brew install zoxide             # Smart directory jumping
+brew install imagemagick        # Image processing and previews
+
+# For Markdown previews:
+brew install glow               # Markdown renderer
+brew install piper              # Pipes output through a command
+{code}
+
+h3. Configure Yazi
+
+Yazi's config directory is {{~/.config/yazi/}}. Create it and add three configuration files.
+
+{code:language=bash}
+mkdir -p ~/.config/yazi
+{code}
+
+h4. yazi.toml
+
+This is the main configuration file. It controls the file manager's behavior.
+
+{code:language=none}
+# ~/.config/yazi/yazi.toml
+
+[mgr]
+# Show hidden files (dotfiles) by default
+show_hidden = true
+
+# Panel width ratio: left sidebar : file list : preview pane
+# 1:3:5 gives the preview pane the most space, which is useful for
+# reading file contents without opening an editor.
+ratio = [1, 3, 5]
+
+# ─── Markdown Preview ────────────────────────────────────────────────────────
+# Pipe .md files through glow for rendered Markdown preview.
+# piper passes the file path as $1 to glow, which renders with a dark style.
+[[plugin.prepend_previewers]]
+name = "*.md"
+run = 'piper -- glow -s dark "$1"'
+{code}
+
+h4. keymap.toml
+
+Custom keybindings for the plugins you will install. Add these to {{~/.config/yazi/keymap.toml}}:
+
+{code:language=none}
+# ~/.config/yazi/keymap.toml
+
+[manager]
+prepend_keymap = [
+  # bypass: Open a file with a specific application
+  { on = [ "o" ], run = "plugin bypass", desc = "Open file with bypass" },
+
+  # compress: Create archives from selected files
+  { on = [ "C" ], run = "plugin compress", desc = "Compress selected files" },
+
+  # diff: Show diff between two selected files
+  { on = [ "D" ], run = "plugin diff", desc = "Diff selected files" },
+
+  # copy-file-contents: Copy the contents of a file to the clipboard
+  { on = [ "Y" ], run = "plugin copy-file-contents", desc = "Copy file contents to clipboard" },
+
+  # what-size: Show the disk usage of selected files/directories
+  { on = [ ".", "s" ], run = "plugin what-size", desc = "Show size of selection" },
+
+  # save-clipboard-to-file: Save clipboard contents to a new file
+  { on = [ ".", "p" ], run = "plugin save-clipboard-to-file", desc = "Save clipboard to file" },
+]
+{code}
+
+h4. init.lua
+
+The Lua init file is used to configure plugins that need initialization. Create {{~/.config/yazi/init.lua}}:
+
+{code:language=none}
+-- ~/.config/yazi/init.lua
+-- Plugin initialization lives here. Add require() calls for any
+-- plugins that expose a setup() function.
+{code}
+
+h3. Install Yazi Plugins
+
+Yazi uses {{ya pack}} to manage plugins. Install the following:
+
+{code:language=bash}
+# Navigate utilities
+ya pack -a yazi-rs/plugins:bypass
+ya pack -a yazi-rs/plugins:compress
+ya pack -a yazi-rs/plugins:diff
+ya pack -a yazi-rs/plugins:copy-file-contents
+ya pack -a yazi-rs/plugins:what-size
+ya pack -a yazi-rs/plugins:save-clipboard-to-file
+{code}
+
+h3. The Shell Wrapper Function
+
+The {{y}} function already added to {{config.fish}} handles the "change directory on exit" behavior. To use it: type {{y}} instead of {{yazi}}. When you press {{q}} to quit Yazi, your terminal will {{cd}} to whatever directory you were in when you quit.
+
+h3. Verify
+
+{code:language=bash}
+yazi --version
+# Expected: Yazi x.x.x
+
+# Launch with the wrapper
+y
+{code}
+
+Press {{q}} to quit and confirm your shell's working directory changed to match your last location in Yazi.
+
+----
+
+h2. 8. Volta (Node.js Version Manager)
+
+Volta is a JavaScript toolchain manager that automatically switches Node.js (and npm/yarn) versions based on your project's {{package.json}}. Unlike nvm, Volta is written in Rust and adds zero overhead to shell startup — version switching happens transparently when you {{cd}} into a project directory.
+
+h3. Install
+
+Use the official Volta installer:
+
+{code:language=bash}
+curl https://get.volta.sh | bash
+{code}
+
+The installer typically adds setup lines to {{~/.bash_profile}} or {{~/.zshenv}}. Since you are using Fish shell, skip those and instead use the Fish-specific setup already in {{config.fish}}:
+
+{code:language=bash}
+set -gx VOLTA_HOME "$HOME/.volta"
+fish_add_path "$VOLTA_HOME/bin"
+{code}
+
+These two lines are sufficient for Fish to find Volta and all binaries it manages.
+
+h3. Install Node.js
+
+{code:language=bash}
+# Install the latest LTS version of Node and set it as the global default
+volta install node
+
+# Or install a specific version
+volta install node@20
+
+# Or explicitly request LTS
+volta install node@lts
+{code}
+
+{{volta install node}} downloads the specified version, installs it under {{~/.volta/}}, and sets it as the default for any project that does not pin a specific version.
+
+h3. Verify Global Default
+
+{code:language=bash}
+volta list
+# Expected output lists node and npm with their installed versions
+
+node --version
+# Expected: v20.x.x (or whatever version you installed)
+
+npm --version
+# Expected: 10.x.x (bundled with the Node version)
+{code}
+
+h3. Pin a Version to a Project
+
+When you are inside a project that should use a specific Node version, pin it:
+
+{code:language=bash}
+cd ~/my-project
+volta pin node@18
+{code}
+
+This writes a {{volta}} field to {{package.json}}. Anyone using Volta who clones the repo will automatically get the correct Node version.
+
+h3. Install Global Tools
+
+Use {{volta install}} for global CLI tools to keep them version-managed:
+
+{code:language=bash}
+volta install yarn
+volta install pnpm
+volta install typescript
+{code}
+
+These tools will be pinned to the Node version that was active when you installed them, avoiding version mismatch issues.
+
+----
+
+h2. Quick Reference
+
+h3. Tool Versions Check
+
+{code:language=bash}
+brew --version
+fish --version
+ghostty --version
+tmux -V
+nvim --version
+starship --version
+yazi --version
+volta --version
+node --version
+{code}
+
+h3. Key Keybindings
+
+h4. tmux (prefix: {{Ctrl-Space}})
+
+|| Keybinding || Action ||
+| {{Ctrl-Space \|}} | Split pane vertically |
+| {{Ctrl-Space -}} | Split pane horizontally |
+| {{Ctrl-Space h/j/k/l}} | Resize pane (5 cells) |
+| {{Ctrl-Space d}} | Detach from session |
+| {{Ctrl-Space [}} | Enter copy/scroll mode |
+| {{Ctrl-Space Ctrl-s}} | Save session (resurrect) |
+| {{Ctrl-Space Ctrl-r}} | Restore session (resurrect) |
+| {{Ctrl-Space I}} | Install plugins (TPM) |
+
+h4. Neovim (NvChad)
+
+|| Keybinding || Action ||
+| {{Space f f}} | Find files (Telescope) |
+| {{Space f g}} | Live grep (Telescope) |
+| {{Space t h}} | Change theme |
+| {{Space c h}} | NvChad cheatsheet |
+| {{:Mason}} | Open LSP installer |
+| {{:Lazy}} | Open plugin manager |
+
+h4. Yazi
+
+|| Keybinding || Action ||
+| {{o}} | Open with bypass |
+| {{C}} | Compress selected files |
+| {{D}} | Diff selected files |
+| {{Y}} | Copy file contents |
+| {{. s}} | Show size of selection |
+| {{. p}} | Save clipboard to file |
+| {{q}} | Quit (and cd to current dir if using {{y}} wrapper) |
+
+h3. Config File Locations
+
+|| Tool || Config Path ||
+| Fish | {{~/.config/fish/config.fish}} |
+| Ghostty | {{~/.config/ghostty/config}} |
+| tmux | {{~/.config/tmux/tmux.conf}} |
+| Neovim | {{~/.config/nvim/}} |
+| Starship | {{~/.config/starship.toml}} (optional) |
+| Yazi | {{~/.config/yazi/}} |
+| Volta | {{~/.volta/}} (managed automatically) |
+
+h3. Common Operations
+
+{code:language=bash}
+# Reload Fish config without restarting
+source ~/.config/fish/config.fish
+
+# Reload tmux config inside a running session
+tmux source-file ~/.config/tmux/tmux.conf
+
+# Attach to (or create) the main tmux session
+tmux new-session -A -s main
+
+# List all tmux sessions
+tmux ls
+
+# Launch Yazi with directory-change-on-exit
+y
+
+# Install a Node.js version with Volta
+volta install node@20
+
+# Check what Volta is managing
+volta list
+
+# Update all Homebrew packages
+brew upgrade
+{code}
+
+h3. Useful Homebrew Commands
+
+{code:language=bash}
+brew list          # List installed packages
+brew outdated      # Show packages with updates available
+brew upgrade       # Upgrade all packages
+brew cleanup       # Remove old versions
+brew info <pkg>    # Show info about a package
+brew search <pkg>  # Search for a package
+{code}
