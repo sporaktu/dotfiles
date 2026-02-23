@@ -1,0 +1,278 @@
+{
+  "version": 2,
+  "plugins": {
+    "frontend-design@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/frontend-design/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.531Z",
+        "lastUpdated": "2026-02-20T18:31:07.145Z"
+      }
+    ],
+    "github@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/github/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.598Z",
+        "lastUpdated": "2026-02-20T18:31:07.109Z"
+      }
+    ],
+    "feature-dev@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/feature-dev/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.680Z",
+        "lastUpdated": "2026-02-20T18:31:07.173Z"
+      }
+    ],
+    "code-review@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/code-review/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.717Z",
+        "lastUpdated": "2026-02-20T18:31:07.131Z"
+      }
+    ],
+    "commit-commands@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/commit-commands/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.753Z",
+        "lastUpdated": "2026-02-20T18:31:07.150Z"
+      }
+    ],
+    "security-guidance@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/security-guidance/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:05.789Z",
+        "lastUpdated": "2026-02-20T18:31:07.125Z"
+      }
+    ],
+    "typescript-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/typescript-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-05T19:49:05.816Z",
+        "lastUpdated": "2026-01-05T19:49:05.816Z"
+      }
+    ],
+    "atlassian@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/atlassian/5d300c892a43",
+        "version": "5d300c892a43",
+        "installedAt": "2026-01-05T19:49:06.125Z",
+        "lastUpdated": "2026-02-21T14:30:17.097Z",
+        "gitCommitSha": "c2625747baa8863ed7ca0f9f1f320d7a8ea1d928"
+      }
+    ],
+    "playwright@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/playwright/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.169Z",
+        "lastUpdated": "2026-02-20T18:31:07.101Z"
+      }
+    ],
+    "agent-sdk-dev@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/agent-sdk-dev/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.225Z",
+        "lastUpdated": "2026-02-20T18:31:07.162Z"
+      }
+    ],
+    "pr-review-toolkit@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/pr-review-toolkit/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.295Z",
+        "lastUpdated": "2026-02-20T18:31:07.178Z"
+      }
+    ],
+    "figma@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/figma/1.1.0",
+        "version": "1.1.0",
+        "installedAt": "2026-01-05T19:49:06.563Z",
+        "lastUpdated": "2026-02-12T19:08:24.193Z",
+        "gitCommitSha": "20aca44ee6ba6092037e943c151c067896828360"
+      }
+    ],
+    "ralph-wiggum@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/ralph-wiggum/15b07b46dab3",
+        "version": "15b07b46dab3",
+        "installedAt": "2026-01-05T19:49:06.621Z",
+        "lastUpdated": "2026-01-05T19:51:45.497Z"
+      }
+    ],
+    "pyright-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/pyright-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-05T19:49:06.648Z",
+        "lastUpdated": "2026-01-05T19:49:06.648Z"
+      }
+    ],
+    "explanatory-output-style@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/explanatory-output-style/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.682Z",
+        "lastUpdated": "2026-02-20T18:31:07.138Z"
+      }
+    ],
+    "hookify@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/hookify/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.749Z",
+        "lastUpdated": "2026-02-20T18:31:07.209Z"
+      }
+    ],
+    "greptile@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/greptile/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-01-05T19:49:06.778Z",
+        "lastUpdated": "2026-02-20T18:31:07.117Z"
+      }
+    ],
+    "csharp-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/csharp-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-05T19:49:06.804Z",
+        "lastUpdated": "2026-01-05T19:49:06.804Z"
+      }
+    ],
+    "swift-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/swift-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-05T19:49:06.830Z",
+        "lastUpdated": "2026-01-05T19:49:06.830Z"
+      }
+    ],
+    "code-simplifier@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-16T18:22:26.027Z",
+        "lastUpdated": "2026-01-16T18:22:26.027Z",
+        "gitCommitSha": "96276205880a60fd66bbae981f5ab568e70c4cbf"
+      }
+    ],
+    "huggingface-skills@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/huggingface-skills/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-16T18:22:26.447Z",
+        "lastUpdated": "2026-01-16T18:22:26.447Z",
+        "gitCommitSha": "462a39896c44a7bbaf2c39aa49056a43af228d55"
+      }
+    ],
+    "circleback@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/circleback/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-16T18:22:26.737Z",
+        "lastUpdated": "2026-01-16T18:22:26.737Z",
+        "gitCommitSha": "6369dec7da4059dd0a12cf1b62ba749799ee15ef"
+      }
+    ],
+    "superpowers@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1",
+        "version": "4.3.1",
+        "installedAt": "2026-01-16T18:22:27.099Z",
+        "lastUpdated": "2026-02-22T03:18:35.499Z",
+        "gitCommitSha": "a08f088968d0789a44a4f5f5f7d8d6bbe46a0b44"
+      }
+    ],
+    "claude-md-management@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/claude-md-management/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-02-18T18:21:58.628Z",
+        "lastUpdated": "2026-02-18T18:21:58.628Z",
+        "gitCommitSha": "261ce4fba4f2c314c490302158909a32e5889c88"
+      }
+    ],
+    "claude-code-setup@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/claude-code-setup/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-02-18T18:21:58.641Z",
+        "lastUpdated": "2026-02-18T18:21:58.641Z",
+        "gitCommitSha": "261ce4fba4f2c314c490302158909a32e5889c88"
+      }
+    ],
+    "slack@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/slack/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-02-18T18:21:58.650Z",
+        "lastUpdated": "2026-02-20T18:31:07.097Z",
+        "gitCommitSha": "261ce4fba4f2c314c490302158909a32e5889c88"
+      }
+    ],
+    "sentry@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/sentry/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-02-18T18:21:59.010Z",
+        "lastUpdated": "2026-02-18T18:21:59.010Z",
+        "gitCommitSha": "e489ce53f1d85cb35c0d059a49ca38616a4105a0"
+      }
+    ],
+    "playground@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/playground/aa296ec81e8c",
+        "version": "aa296ec81e8c",
+        "installedAt": "2026-02-18T18:21:59.019Z",
+        "lastUpdated": "2026-02-20T18:31:07.195Z",
+        "gitCommitSha": "261ce4fba4f2c314c490302158909a32e5889c88"
+      }
+    ],
+    "firecrawl@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/gray.karegeannes/.claude/plugins/cache/claude-plugins-official/firecrawl/1.0.3",
+        "version": "1.0.3",
+        "installedAt": "2026-02-18T18:21:59.291Z",
+        "lastUpdated": "2026-02-18T18:21:59.291Z",
+        "gitCommitSha": "684b975c8cc6bd0fcfa96f787900bf87fffeef57"
+      }
+    ]
+  }
+}
