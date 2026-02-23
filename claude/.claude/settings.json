@@ -1,0 +1,64 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Allow webfetch",
+      "Allow pull request creation and merge"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/tmux-agent-watcher.sh",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "$HOME/.claude/hooks/statusline.sh"
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "atlassian@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "agent-sdk-dev@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "ralph-wiggum@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "greptile@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "huggingface-skills@claude-plugins-official": true,
+    "circleback@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
+    "sentry@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
+    "firecrawl@claude-plugins-official": true
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "low",
+  "model": "opus"
+}

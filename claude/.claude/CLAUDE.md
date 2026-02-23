@@ -1,0 +1,3 @@
+- the current year is 2025
+- do not assume anything is complete unless I explicitly say so, you cannot assume something is done just because the date is passed
+- don't add "created with claude code" to commit messages
