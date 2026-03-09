@@ -30,8 +30,22 @@ dofile(vim.g.base46_cache .. "defaults")
 dofile(vim.g.base46_cache .. "statusline")
 
 require "options"
-require "autocmds"
+require "nvchad.autocmds"
 
 vim.schedule(function()
   require "mappings"
 end)
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.js,*.ts,*.jsx,*.tsx,*.html",
+  callback = function()
+    vim.cmd "PrettierAsync"
+  end,
+})
+
+-- vim.keymap.set("n", "<Leader>p", function()
+--   vim.lsp.buf.format({ async = true })
+-- end, { desc = "Prettier format" })
+
+vim.keymap.set("n", "<Leader>f", require("conform").format, { desc = "Format buffer" })
+

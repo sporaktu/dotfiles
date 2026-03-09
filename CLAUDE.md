@@ -15,14 +15,14 @@ This is a comprehensive dotfiles repository that configures a Fish shell-based d
 ```
 
 ### Manual Setup with Stow
-Link configurations to `~/.config`:
+Link configurations to `$HOME`:
 ```bash
-stow --target=$HOME/.config fish kitty nvim tmux
+stow --target=$HOME fish kitty nvim tmux ghostty sketchybar superfile yazi claude
 ```
 
 Add specific applications as needed:
 ```bash
-stow --target=$HOME/.config sketchybar yabai ghostty
+stow --target=$HOME APP
 ```
 
 ## Key Components
@@ -57,8 +57,9 @@ stow --target=$HOME/.config sketchybar yabai ghostty
 ## Architecture
 
 ### Configuration Management
-- Uses GNU Stow for symlink creation from `APP/.config/APP/*` to `~/.config/APP/*`
-- Each application has its own directory with `.config` subdirectory structure
+- Uses GNU Stow with `--target=$HOME` for symlink creation
+- Most apps: `APP/.config/APP/*` → `~/.config/APP/*`
+- Dotfile apps (e.g. claude): `APP/.APP/*` → `~/.APP/*`
 - Variables and themes defined in separate files (e.g., `sketchybar/variables.sh`)
 
 ### macOS Integration
@@ -86,9 +87,9 @@ stow --target=$HOME/.config sketchybar yabai ghostty
    - sketchybar: `sketchybar --reload`
 
 ### Adding New Applications
-1. Create directory structure: `APP/.config/APP/`
+1. Create directory structure: `APP/.config/APP/` (or `APP/.APP/` for dotfile dirs)
 2. Add configuration files in the appropriate subdirectory
-3. Run `stow --target=$HOME/.config APP` to link
+3. Run `stow --target=$HOME APP` to link
 4. Update `install.sh` if new dependencies are needed
 
 ## Dependencies
