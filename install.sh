@@ -45,6 +45,10 @@ case "$OS" in
     ;;
 esac
 
-stow --target="$HOME/.config" fish kitty nvim tmux || true
+# Stow configs that use ~/.config (APP/.config/APP/ structure)
+stow --target="$HOME" fish kitty nvim tmux ghostty sketchybar superfile yazi || true
+
+# Stow configs that use ~/  (APP/.APP/ structure)
+stow --target="$HOME" claude || true
 
 echo "Installation complete. Log out and back in for shell changes to take effect."
