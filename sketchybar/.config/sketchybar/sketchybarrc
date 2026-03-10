@@ -59,6 +59,11 @@ source "$ITEM_DIR/ram.sh"
 
 #################### Finalizing Setup ####################
 
+# Kill any existing menu bar slide daemons
+pkill -f "menu_bar_slide" 2>/dev/null
+# Launch menu bar slide daemon in background
+"$PLUGIN_DIR/menu_bar_slide" &
+
 sketchybar --hotload true
 
 sketchybar --update
