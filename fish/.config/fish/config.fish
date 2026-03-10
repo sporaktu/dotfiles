@@ -8,18 +8,13 @@
 fish_add_path /opt/homebrew/bin
 fish_add_path $HOME/.volta/bin
 fish_add_path $HOME/.local/bin
-set -Ux EDITOR nvim
-set -Ux VISUAL nvim
+set -gx EDITOR nvim
+set -gx VISUAL nvim
 alias localllama="python3 ~/claude_local.py"
 alias y="yazi"
 
 starship init fish | source
 
-export PATH="$HOME/.local/bin:$PATH"
-
 # bun
 set --export BUN_INSTALL "$HOME/.bun"
 set --export PATH $BUN_INSTALL/bin $PATH
-
-# OpenClaw Completion
-source "/Users/gray/.openclaw/completions/openclaw.fish"
