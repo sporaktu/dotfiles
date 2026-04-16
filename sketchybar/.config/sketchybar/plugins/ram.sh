@@ -1,23 +1,38 @@
 #!/usr/bin/env bash
 
-# Get actual total physical RAM from hardware
+# Mirrors Activity Monitor's "Memory Used":
+#   Used   = App Memory (anonymous - purgeable) + Wired + Compressed
+#   Cached = File-backed + Purgeable (reclaimable on demand)
+
 TOTAL_BYTES=$(sysctl -n hw.memsize)
-
-# Read page counts for used memory calculation
-P_ACTIVE=$(vm_stat | awk '/Pages active:/       {print $3}' | tr -d '.')
-P_INACTIVE=$(vm_stat | awk '/Pages inactive:/   {print $3}' | tr -d '.')
-P_SPEC=$(vm_stat | awk '/Pages speculative:/   {print $3}' | tr -d '.')
-P_WIRED=$(vm_stat | awk '/Pages wired down:/    {print $4}' | tr -d '.')
-
-# Get page size in bytes
 PAGE_SIZE=$(sysctl -n vm.pagesize)
 
-# Calculate used bytes (active + inactive + speculative + wired)
-USED_BYTES=$(( (P_ACTIVE + P_INACTIVE + P_SPEC + P_WIRED) * PAGE_SIZE ))
+VM=$(vm_stat)
+field() { echo "$VM" | awk -v pat="$1" '$0 ~ pat {for (i=1;i<=NF;i++) if ($i ~ /[0-9]+\.?$/) { gsub(/\./,"",$i); print $i; exit }}'; }
 
-# Convert to GB with 1 decimal place
-TOTAL_GB=$(echo "scale=1; $TOTAL_BYTES / 1024 / 1024 / 1024" | bc)
-USED_GB=$(echo "scale=1; $USED_BYTES / 1024 / 1024 / 1024" | bc)
+P_WIRED=$(field 'Pages wired down:')
+P_ANON=$(field 'Anonymous pages:')
+P_PURGE=$(field 'Pages purgeable:')
+P_COMP=$(field 'Pages occupied by compressor:')
+P_FILE=$(field 'File-backed pages:')
 
-# Output for SketchyBar
-sketchybar --set "$NAME" icon="󰍛" label="${USED_GB}GB/${TOTAL_GB}GB"
+APP_BYTES=$(( (P_ANON - P_PURGE) * PAGE_SIZE ))
+USED_BYTES=$(( APP_BYTES + (P_WIRED + P_COMP) * PAGE_SIZE ))
+CACHED_BYTES=$(( (P_FILE + P_PURGE) * PAGE_SIZE ))
+
+to_gb() { echo "scale=1; $1 / 1024 / 1024 / 1024" | bc; }
+
+USED_GB=$(to_gb $USED_BYTES)
+CACHED_GB=$(to_gb $CACHED_BYTES)
+TOTAL_GB=$(to_gb $TOTAL_BYTES)
+
+case "$SENDER" in
+    mouse.entered)
+        LABEL="${USED_GB} + ${CACHED_GB} cached / ${TOTAL_GB}GB"
+        ;;
+    *)
+        LABEL="${USED_GB}GB/${TOTAL_GB}GB"
+        ;;
+esac
+
+sketchybar --set "$NAME" icon="󰍛" label="$LABEL"
