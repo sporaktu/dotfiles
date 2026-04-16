@@ -19,4 +19,4 @@ sketchybar --add item ram right \
         background.drawing=on \
         script="$PLUGIN_DIR/ram.sh" \
         click_script="open -a 'Activity Monitor'" \
-    --subscribe ram system_woke
+    --subscribe ram system_woke mouse.entered mouse.exited
