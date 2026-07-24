@@ -93,6 +93,15 @@ phase2(){
   sbctl sign -s "$ESP/EFI/BOOT/BOOTX64.EFI"
   for k in "${KERNELS[@]}"; do sbctl sign -s "$ESP/EFI/Linux/arch-$k.efi"; done
   echo; sbctl verify
+  cat <<'NOTE'
+
+  NOTE: sbctl verify will still list some files as "not signed" — this is FINE:
+    * EFI/GRUB/grubx64.efi, grub/*  -> GRUB, the unsigned fallback (removed in phase3)
+    * vmlinuz-linux, vmlinuz-linux-zen -> bare kernels; under Secure Boot the signed
+      UKIs boot (they embed their own kernel copy), so the standalone vmlinuz are not
+      in the boot path and don't need signing.
+  Only the 4 signed above (systemd-boot x2 + both UKIs) are the trusted chain.
+NOTE
 
   cat <<'MSG'
 
