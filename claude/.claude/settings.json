@@ -1,22 +1,27 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
   "permissions": {
-    "allow": [
-      "Allow webfetch",
-      "Allow pull request creation and merge"
-    ]
+    "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Task",
+        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/tmux-agent-watcher.sh",
             "timeout": 10,
+            "async": true
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/tmux-tab-namer.sh",
+            "timeout": 5,
             "async": true
           }
         ]
@@ -56,12 +61,27 @@
     "chrome-devtools-mcp@claude-plugins-official": true,
     "postman@claude-plugins-official": true,
     "microsoft-docs@claude-plugins-official": true,
-    "brightdata-plugin@claude-plugins-official": true
+    "brightdata-plugin@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": false,
+    "analyze-project@lt-claude-code-skills": false,
+    "branch-comparison@lt-claude-code-skills": false,
+    "github@lt-claude-code-skills": false,
+    "jira-work-tracker@lt-claude-code-skills": true,
+    "mermaid-html@lt-claude-code-skills": false
+  },
+  "extraKnownMarketplaces": {
+    "lt-claude-code-skills": {
+      "source": {
+        "source": "github",
+        "repo": "REDACTED-org/REDACTED-marketplace"
+      }
+    }
   },
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/hooks/statusline.sh",
     "padding": 0
   },
+  "tui": "default",
   "skipDangerousModePermissionPrompt": true
 }
