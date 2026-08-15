@@ -2,6 +2,20 @@
 # Rebuilds kwin-scripts-krohnkite-git from the AUR with a local patch applied
 # on top, and installs it.
 #
+# !! STATUS: OPTIONAL / UNVERIFIED -- you probably do not need this. !!
+#
+# This was written for "kitty doesn't tile", which turned out to have a
+# different cause: the Krohnkite script had silently died after latching onto a
+# destroyed output, so nothing tiled and no shortcut worked. A script reload
+# fixed it and kitty has tiled correctly since, WITHOUT this patch. See
+# krohnkite-reload.sh and krohnkite-resume-watch.sh, which address the real
+# problem.
+#
+# The patch below is still a genuine upstream bug (esjeon/krohnkite#241), but it
+# has never been confirmed to fix anything on this machine. Running this script
+# installs a locally modified Krohnkite. Prefer stock packages unless you have
+# actually reproduced the startup race.
+#
 # Why this exists: Krohnkite has a race where fast-starting clients (notably
 # kitty) can get added before KWin reports their final geometry, so the
 # initial tile placement misfires and the window is left floating/untiled.

@@ -1,0 +1,18 @@
+[Unit]
+Description=Reload Krohnkite (KWin tiling script) after resume from sleep
+Documentation=file:%h/.config/scripts/krohnkite-reload.sh
+# Only meaningful inside a running graphical session -- it talks to KWin on the
+# session bus.
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/scripts/krohnkite-resume-watch.sh
+Restart=on-failure
+RestartSec=5s
+# The watcher is a long-lived dbus monitor; it should be cheap and unobtrusive.
+Nice=10
+
+[Install]
+WantedBy=graphical-session.target
