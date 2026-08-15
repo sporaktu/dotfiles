@@ -1,0 +1,148 @@
+diff --git a/src/driver/kwindriver.ts b/src/driver/kwindriver.ts
+index 7a5ae76..d269a9e 100644
+--- a/src/driver/kwindriver.ts
++++ b/src/driver/kwindriver.ts
+@@ -163,7 +163,10 @@ class KWinDriver implements IDriverContext {
+         // client.setMaximize(false, false);
+       }
+       this.control.onWindowAdded(this, window, "windowAdded");
+-      if (window.state !== WindowState.Unmanaged) {
++      if (
++        window.state !== WindowState.Unmanaged ||
++        this.control.isPendingWindow(window)
++      ) {
+         this._bindWindowEvents(window, client);
+         LOG?.send(LogModules.newWindowAdded, "", debugWin(client), {
+           winClass: [`${client.resourceClass}`],
+diff --git a/src/engine/control.ts b/src/engine/control.ts
+index 294528c..dc0416e 100644
+--- a/src/engine/control.ts
++++ b/src/engine/control.ts
+@@ -17,12 +17,74 @@ class TilingController {
+   private isDragging: boolean;
+   private dragCompleteTime: number | null;
+   private _metaShortcuts: { [key: string]: Shortcut };
++  /**
++   * Windows whose initial `manage`/`arrange` has been deferred until KWin
++   * reports a stable geometry. Fast-starting clients (e.g. kitty) can be
++   * added before their final geometry/surface events land, which used to
++   * cause an incorrect first placement that left them floating/untiled.
++   */
++  private pendingWindows: { [id: string]: boolean };
+ 
+   public constructor(engine: TilingEngine) {
+     this.engine = engine;
+     this.isDragging = false;
+     this.dragCompleteTime = null;
+     this._metaShortcuts = this._initMetaShortcuts();
++    this.pendingWindows = {};
++  }
++
++  public isPendingWindow(window: WindowClass): boolean {
++    return this.pendingWindows[window.id] === true;
++  }
++
++  private markWindowPending(window: WindowClass): void {
++    this.pendingWindows[window.id] = true;
++  }
++
++  private clearPendingWindow(window: WindowClass): void {
++    delete this.pendingWindows[window.id];
++  }
++
++  private canInitializeWindow(window: WindowClass | null): boolean {
++    if (
++      window === null ||
++      !this.isPendingWindow(window) ||
++      window.state !== WindowState.Unmanaged ||
++      window.shouldIgnore
++    )
++      return false;
++
++    const actualGeometry = window.actualGeometry;
++    if (actualGeometry.width <= 10 || actualGeometry.height <= 10)
++      return false;
++
++    const workingArea = window.surface.workingArea;
++    return workingArea.width > 0 && workingArea.height > 0;
++  }
++
++  private initializeWindow(
++    ctx: IDriverContext,
++    window: WindowClass,
++    reason: keyof typeof ArrangeReason,
++  ): void {
++    this.clearPendingWindow(window);
++    this.engine.manage(window);
++
++    if (
++      window.state !== WindowState.NativeMaximized &&
++      window.state !== WindowState.NativeFullscreen
++    )
++      this.engine.arrange(ctx, reason, getMethodName());
++  }
++
++  private tryInitializeWindow(
++    ctx: IDriverContext,
++    window: WindowClass | null,
++    reason: keyof typeof ArrangeReason,
++  ): boolean {
++    if (!this.canInitializeWindow(window)) return false;
++    this.initializeWindow(ctx, window as WindowClass, reason);
++    return true;
+   }
+ 
+   public onSurfaceUpdate(
+@@ -44,18 +106,14 @@ class TilingController {
+     window: WindowClass,
+     reason: keyof typeof ArrangeReason,
+   ): void {
+-    this.engine.manage(window);
+-
+-    /* move window to next surface if the current surface is "full" */
+-    if (window.isTileable) {
+-      const srf = ctx.currentSurface;
+-      const tiles = this.engine.windows.getVisibleTiles(srf);
+-    }
+-    if (
+-      window.state !== WindowState.NativeMaximized &&
+-      window.state !== WindowState.NativeFullscreen
+-    )
++    if (window.shouldIgnore) {
++      this.engine.manage(window);
+       this.engine.arrange(ctx, reason, getMethodName());
++      return;
++    }
++
++    /* defer manage/arrange until the window reports a stable geometry */
++    this.markWindowPending(window);
+   }
+ 
+   public onWindowSkipPagerChanged(
+@@ -74,6 +132,8 @@ class TilingController {
+     window: WindowClass,
+     reason: keyof typeof ArrangeReason,
+   ): void {
++    this.clearPendingWindow(window);
++    if (window.state === WindowState.Unmanaged) return;
+     this.engine.unmanage(window);
+     this.engine.arrange(ctx, reason, getMethodName());
+   }
+@@ -245,6 +305,8 @@ class TilingController {
+     ctx: IDriverContext,
+     window: WindowClass,
+   ): void {
++    if (this.tryInitializeWindow(ctx, window, "windowAdded")) return;
++
+     LOG?.send(
+       LogModules.bufferGeometryChanged,
+       "enforceSize",
+@@ -263,6 +325,8 @@ class TilingController {
+     comment?: string,
+   ): void {
+     if (window) {
++      if (this.tryInitializeWindow(ctx, window, reason)) return;
++
+       if (comment === "unminimized") ctx.currentWindow = window;
+       const workingArea = window.surface.workingArea;
+       if (window.floatGeometry.width > workingArea.width) {
