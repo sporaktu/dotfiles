@@ -1,3 +1,5 @@
-- the current year is 2025
+- NEVER use relative paths in code — use absolute. NEVER use absolute paths when referencing files to user — use relative.
+- NEVER run independent tool calls sequentially — batch them in parallel.
+- NEVER mark tasks complete without validation — test everything, require proof.
 - do not assume anything is complete unless I explicitly say so, you cannot assume something is done just because the date is passed
 - don't add "created with claude code" to commit messages
