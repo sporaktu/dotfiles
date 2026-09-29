@@ -2,3 +2,27 @@ fish/.config/fish/conf.d/secrets.fish
 
 # Fish universal variables (may contain secrets)
 fish/.config/fish/fish_variables
+
+# This repo is public. Claude Code skills: track only self-authored ones. Installed
+# skills (skills-CLI symlinks into ~/.agents) and org-synced ones (skills/synced/,
+# enterprise content) stay out. Un-ignore a new skill of your own with a `!` line.
+claude/.claude/skills/*
+!claude/.claude/skills/backup-check/
+claude/.agents
+
+# Claude Code machine-local plugin state (CLI rewrites it: absolute paths, SHAs, marketplace names)
+claude/.claude/plugins/blocklist.json
+claude/.claude/plugins/installed_plugins.json
+claude/.claude/plugins/known_marketplaces.json
+
+# Plans routinely contain work detail
+claude/.claude/plans/*.md
+
+# sketchybar build backups
+sketchybar/.config/sketchybar/plugins/*.prev-backup
+
+# Installer-generated fish snippets (break on machines without the tool)
+fish/.config/fish/conf.d/rustup.fish
+
+# tpm-installed plugin clones (tpm and catppuccin stay tracked as submodules)
+tmux/.config/tmux/plugins/*
