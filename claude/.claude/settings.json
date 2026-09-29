@@ -62,20 +62,7 @@
     "postman@claude-plugins-official": true,
     "microsoft-docs@claude-plugins-official": true,
     "brightdata-plugin@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": false,
-    "analyze-project@lt-claude-code-skills": false,
-    "branch-comparison@lt-claude-code-skills": false,
-    "github@lt-claude-code-skills": false,
-    "jira-work-tracker@lt-claude-code-skills": true,
-    "mermaid-html@lt-claude-code-skills": false
-  },
-  "extraKnownMarketplaces": {
-    "lt-claude-code-skills": {
-      "source": {
-        "source": "github",
-        "repo": "REDACTED-org/REDACTED-marketplace"
-      }
-    }
+    "swift-lsp@claude-plugins-official": false
   },
   "statusLine": {
     "type": "command",

@@ -26,3 +26,6 @@ fish/.config/fish/conf.d/rustup.fish
 
 # tpm-installed plugin clones (tpm and catppuccin stay tracked as submodules)
 tmux/.config/tmux/plugins/*
+
+# backup-check machine inventory (hostnames, repo list): generated locally, backed up to OneDrive
+claude/.claude/skills/backup-check/MACHINE-SNAPSHOT.md
