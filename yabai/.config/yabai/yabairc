@@ -51,7 +51,7 @@ yabai -m config window_shadow               float
 
 # Dock-specific settings and menu bar configuration
 # yabai -m config external_bar                off
-yabai -m config external_bar "main:50:0"
+yabai -m config external_bar "main:40:0"
 
 # Remove menubar_opacity to allow normal menu bar hover behavior
 # yabai -m config menubar_opacity             0.0
@@ -100,6 +100,10 @@ yabai -m rule --add label="Control Center" app="^Control Center$" manage=off
 yabai -m rule --add label="Notification Center" app="^Notification Center$" manage=off
 yabai -m rule --add label="LaunchPad" app="^Launchpad$" manage=off
 yabai -m rule --add label="ScreenSearch" app="^ScreenSearch$" manage=off
+
+# Arc Browser - force manage main windows, exclude empty-title helper windows
+yabai -m rule --add label="Arc" app="^Arc$" manage=on
+yabai -m rule --add label="Arc Little" app="^Arc$" title="^$" manage=off
 
 # ===== Signals ================================
 
