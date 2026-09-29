@@ -79,7 +79,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "$HOME/.claude/hooks/statusline.sh",
+    "command": "$HOME/.claude/statusline.sh",
     "padding": 0
   },
   "tui": "default",
