@@ -8,7 +8,7 @@
 # vertically (below existing agent panes).
 #
 # Receives JSON on stdin with fields:
-#   tool_name       - "Task"
+#   tool_name       - "Agent"
 #   tool_input      - { description, prompt, subagent_type, run_in_background, ... }
 #   tool_response   - { isAsync, status, agentId, outputFile, description, ... }
 
@@ -18,7 +18,7 @@ INPUT=$(cat)
 
 # --- Guard: only act on Task tool ---
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
-if [[ "$TOOL_NAME" != "Task" ]]; then
+if [[ "$TOOL_NAME" != "Agent" ]]; then
     exit 0
 fi
 
