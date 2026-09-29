@@ -23,10 +23,11 @@ while true; do
 
   if [ -n "$CURSOR_Y" ]; then
     if [ "$CURSOR_Y" -le "$TRIGGER_ZONE" ] && [ "$STATE" = "up" ]; then
-      sketchybar --animate sin 10 --bar y_offset="$SLIDE_OFFSET"
+      # Unanimated: sketchybar's animator deadlocks against display reconfig.
+      sketchybar --bar y_offset="$SLIDE_OFFSET"
       STATE="down"
     elif [ "$CURSOR_Y" -gt 50 ] && [ "$STATE" = "down" ]; then
-      sketchybar --animate sin 10 --bar y_offset="$RESTING_OFFSET"
+      sketchybar --bar y_offset="$RESTING_OFFSET"
       STATE="up"
     fi
   fi

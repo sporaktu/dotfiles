@@ -5,33 +5,55 @@ let restingOffset = 5
 let slideOffset = 35  // 24 (menu bar) + 5 (resting) + 6 (extra padding)
 let triggerZone = 10
 let exitZone = 50
-let animFrames = 10
+
+let yabaiPath = "/opt/homebrew/bin/yabai"
+let sketchybarPath = FileManager.default.fileExists(atPath: "/usr/local/bin/sketchybar")
+    ? "/usr/local/bin/sketchybar"
+    : "/opt/homebrew/bin/sketchybar"
+
+// Read base top padding from yabai config (default 10)
+let baseTopPadding = 10
+let menuBarPadding = 30  // extra padding when menu bar is visible
 
 var state = "up"
 
-func setOffset(_ offset: Int, frames: Int) {
+func runAsync(_ path: String, _ args: [String]) {
     let task = Process()
-    task.executableURL = URL(fileURLWithPath: "/usr/local/bin/sketchybar")
-    // Try homebrew path if default doesn't exist
-    if !FileManager.default.fileExists(atPath: "/usr/local/bin/sketchybar") {
-        task.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/sketchybar")
-    }
-    task.arguments = ["--animate", "sin", "\(frames)", "--bar", "y_offset=\(offset)"]
+    task.executableURL = URL(fileURLWithPath: path)
+    task.arguments = args
+    task.standardOutput = FileHandle.nullDevice
+    task.standardError = FileHandle.nullDevice
     try? task.run()
 }
 
-// Use a RunLoop-based timer for precise polling
-let timer = Timer(timeInterval: 0.016, repeats: true) { _ in  // ~60fps
+func slideDown() {
+    // Move sketchybar down. Deliberately NOT animated: sketchybar's animator
+    // deadlocks against a concurrent display-reconfiguration event (its
+    // CVDisplayLink is released from inside its own frame callback), which
+    // wedges the daemon into a live-but-unresponsive state.
+    runAsync(sketchybarPath, ["--bar", "y_offset=\(slideOffset)"])
+    // Increase yabai top padding for all spaces
+    runAsync(yabaiPath, ["-m", "config", "top_padding", "\(baseTopPadding + menuBarPadding)"])
+}
+
+func slideUp() {
+    // Move sketchybar back up. Unanimated for the same reason as slideDown().
+    runAsync(sketchybarPath, ["--bar", "y_offset=\(restingOffset)"])
+    // Restore yabai top padding
+    runAsync(yabaiPath, ["-m", "config", "top_padding", "\(baseTopPadding)"])
+}
+
+// Poll cursor position at ~60fps
+let timer = Timer(timeInterval: 0.016, repeats: true) { _ in
     let event = CGEvent(source: nil)
     guard let e = event else { return }
-    let loc = e.location  // top-left origin, y=0 is top
-    let y = Int(loc.y)
+    let y = Int(e.location.y)  // top-left origin, y=0 is top
 
     if y <= triggerZone && state == "up" {
-        setOffset(slideOffset, frames: 3)   // fast slide in
+        slideDown()
         state = "down"
     } else if y > exitZone && state == "down" {
-        setOffset(restingOffset, frames: 10) // smooth slide out
+        slideUp()
         state = "up"
     }
 }
