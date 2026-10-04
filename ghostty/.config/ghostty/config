@@ -41,5 +41,6 @@
 # # which is explained in the docs for that config option.
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
-command = "/opt/homebrew/bin/tmux new-session -A -s main -c ~ '/opt/homebrew/bin/fish --login --interactive'"
+# Prepend Homebrew's bin so tmux/fish resolve on macOS; harmless on Linux.
+command = PATH="/opt/homebrew/bin:$PATH" exec tmux new-session -A -s main -c ~ 'fish --login --interactive'
 theme = dark:Catppuccin Frappe,light:Catppuccin Latte
