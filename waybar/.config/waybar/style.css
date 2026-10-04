@@ -1,127 +1,180 @@
-@import "mocha.css"; 
+@import "tokyonight.css";
 
 * {
-    font-family: "MesloLGS Nerd Font Mono Bold";
-    font-size: 16px;
+    font-family: "AtkynsonMono Nerd Font", "Symbols Nerd Font Mono";
+    font-size: 13px;
     min-height: 0;
     font-weight: bold;
 }
 
+/* ---- Base bar: fully transparent ---- */
 window#waybar {
     background: transparent;
-    /* background-color: @crust; */
-    color: @overlay0;
-    transition-property: background-color;
-    transition-duration: 0.1s;
-    border-bottom: 1px solid @overlay1;
+    color: @fg;
 }
 
-#window {
-    margin: 8px;
-    padding-left: 8;
-    padding-right: 8;
+/* ---- Tooltip ---- */
+tooltip {
+    background-color: alpha(@bg, 0.9);
+    border: 1px solid @comment;
+    border-radius: 10px;
+    color: @fg;
 }
 
-button {
-    box-shadow: inset 0 -3px transparent;
-    border: none;
-    border-radius: 0;
+/* ---- Pill / Island groups ---- */
+.modules-left,
+.modules-center,
+.modules-right {
+    margin: 0;
 }
 
-button:hover {
-    background: inherit;
-    color: @mauve;
-    border-top: 2px solid @mauve;
+/* Shared island style for all groups */
+#workspaces,
+#window,
+#mpris,
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#tray,
+#clock {
+    transition: all 0.3s ease;
 }
 
-#workspaces button {
+.group {
+    background-color: alpha(@bg, 0.85);
+    border: 1px solid alpha(@comment, 0.4);
+    border-radius: 14px;
+    margin: 2px 4px;
     padding: 0 4px;
 }
 
-#workspaces button.focused {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: @rosewater;
-    border-top: 2px solid @rosewater;
+.group:hover {
+    background-color: alpha(@bg, 0.95);
+    border-color: alpha(@comment, 0.7);
+}
+
+/* ---- Workspaces ---- */
+#workspaces button {
+    padding: 0 6px;
+    color: @comment;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+#workspaces button.empty {
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+    font-size: 0;
+    opacity: 0;
+}
+
+#workspaces button:hover {
+    background: alpha(@magenta, 0.15);
+    color: @magenta;
 }
 
 #workspaces button.active {
-    background-color: rgba(0, 0, 0, 0.3);
-    color: @mauve;
-    border-top: 2px solid @mauve;
+    color: @red;
+    background: alpha(@red, 0.15);
 }
 
 #workspaces button.urgent {
-    background-color: #eb4d4b;
+    color: @orange;
+    background: alpha(@orange, 0.15);
 }
 
-#pulseaudio,
-#clock,
-#battery,
-#cpu,
-#memory,
-#disk,
-#temperature,
-#backlight,
-#wireplumber,
-#tray,
-#network,
-#bluetooth,
-#mode,
-#scratchpad {
-  margin: 2px 4px;
-  padding: 2px 4px;
-  background-color: lightblue;
-  border-radius: 4px;
-  color: black;
+/* ---- Active window ---- */
+#window {
+    color: @fg;
+    padding: 0 10px;
 }
 
-#clock {
-    background-color: @maroon;
-    border-bottom: 2px solid @maroon;
+/* ---- Media (center) ---- */
+#mpris {
+    color: @green;
+    padding: 0 12px;
 }
 
-#clock.date {
-    background-color: @mauve;
-    border-bottom: 2px solid @mauve;
+#mpris.paused {
+    color: @comment;
 }
 
-#pulseaudio {
-    background-color: @blue;
-    border-bottom: 2px solid @blue;
+/* ---- System modules ---- */
+#cpu {
+    color: @yellow;
+    padding: 0 8px;
+}
+
+#memory {
+    color: @cyan;
+    padding: 0 8px;
 }
 
 #network {
-    background-color: @yellow;
-    border-bottom: 2px solid @yellow;
+    color: @orange;
+    padding: 0 8px;
 }
 
-#idle_inhibitor {
-    margin-right: 12px;
-    background-color: #7cb342;
+#network.disconnected {
+    color: @comment;
 }
 
-#idle_inhibitor.activated {
-    background-color: @red;
+/* ---- Bluetooth ---- */
+#bluetooth {
+    color: @blue;
+    padding: 0 8px;
 }
 
-#battery {
-    background-color: @green;
-    border-bottom: 2px solid @green;
+#bluetooth.disabled,
+#bluetooth.off {
+    color: @comment;
 }
 
-/* If workspaces is the leftmost module, omit left margin */
-.modules-left>widget:first-child>#workspaces {
-    margin-left: 0;
+/* ---- Status modules ---- */
+#pulseaudio {
+    color: @green;
+    padding: 0 8px;
 }
 
-/* If workspaces is the rightmost module, omit right margin */
-.modules-right>widget:last-child>#workspaces {
-    margin-right: 0;
+#pulseaudio.muted {
+    color: @comment;
 }
 
-#custom-vpn {
-    background-color: @lavender;
-    border-radius: 15px;
-    padding-left: 6px;
-    padding-right: 6px;
+#tray {
+    padding: 0 6px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+/* ---- Brightness ---- */
+#custom-brightness {
+    color: @yellow;
+    padding: 0 8px;
+    background-color: alpha(@bg, 0.85);
+    border: 1px solid alpha(@comment, 0.4);
+    border-radius: 14px;
+    margin: 2px 4px;
+}
+
+#custom-brightness:hover {
+    background-color: alpha(@bg, 0.95);
+    border-color: alpha(@comment, 0.7);
+}
+
+/* ---- Clock island ---- */
+#clock {
+    color: @magenta;
+    padding: 0 12px;
 }

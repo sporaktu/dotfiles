@@ -1,66 +1,68 @@
-{
-  "position": "top",
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprctl/window"],
-  "modules-right": ["backlight/slider","bluetooth","network", "pulseaudio", "battery", "clock"],
-  "clock": {
-    "format": "<span foreground='#f5c2e7'>   </span>{:%a %d %H:%M}",
-    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+[
+  {
+    "output": "HDMI-A-2",
+    "position": "top",
+    "height": 34,
+    "margin-top": 5,
+    "margin-left": 10,
+    "margin-right": 10,
+    "spacing": 0,
+    "reload_style_on_change": true,
+    "modules-left": ["group/workspaces"],
+    "modules-center": ["group/media"],
+    "modules-right": ["group/system", "custom/brightness", "group/status", "group/clock"],
+    "include": ["~/.config/waybar/modules.jsonc"],
+    "custom/brightness": {
+      "format": "󰃠 {}",
+      "return-type": "json",
+      "exec": "~/.config/waybar/scripts/brightness.sh HDMI-A-2",
+      "on-scroll-up": "~/.config/waybar/scripts/brightness.sh HDMI-A-2 up",
+      "on-scroll-down": "~/.config/waybar/scripts/brightness.sh HDMI-A-2 down",
+      "interval": 30
+    }
   },
-  "battery": {
-    "states": {
-      "warning": 30,
-      "critical": 15
-    },
-    "format": "<span size='13000' foreground='#a6e3a1'>{icon} </span> {capacity}%",
-    "format-warning": "<span size='13000' foreground='#B1E3AD'>{icon} </span> {capacity}%",
-    "format-critical": "<span size='13000' foreground='#E38C8F'>{icon} </span> {capacity}%",
-    "format-charging": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-plugged": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-alt": "<span size='13000' foreground='#B1E3AD'>{icon} </span> {time}",
-    "format-full": "<span size='13000' foreground='#B1E3AD'> </span>{capacity}%",
-    "format-icons": ["", "", "", "", ""],
-    "tooltip-format": "{time}"
+  {
+    "output": "DP-5",
+    "position": "top",
+    "height": 34,
+    "margin-top": 5,
+    "margin-left": 10,
+    "margin-right": 10,
+    "spacing": 0,
+    "reload_style_on_change": true,
+    "modules-left": ["group/workspaces"],
+    "modules-center": [],
+    "modules-right": ["custom/brightness", "group/status", "group/clock"],
+    "include": ["~/.config/waybar/modules.jsonc"],
+    "custom/brightness": {
+      "format": "󰃠 {}",
+      "return-type": "json",
+      "exec": "~/.config/waybar/scripts/brightness.sh DP-5",
+      "on-scroll-up": "~/.config/waybar/scripts/brightness.sh DP-5 up",
+      "on-scroll-down": "~/.config/waybar/scripts/brightness.sh DP-5 down",
+      "interval": 30
+    }
   },
-  "bluetooth": {
-
-  },
-  "network": {
-    "format-wifi": "<span size='13000' foreground='#f5e0dc'>  </span>{essid}",
-    "format-ethernet": "<span size='13000' foreground='#f5e0dc'>󰤭  </span> Disconnected",
-    "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='13000' foreground='#f5e0dc'>  </span>Disconnected",
-    "tooltip-format-wifi": "Signal Strenght: {signalStrength}%"
-  },
-  "pulseaudio": {
-      "format": "{icon}  {volume}%",
-      "format-muted": "",
-      "format-icons": {
-          "default": ["", "", " "]
-      },
-      "on-click": "pavucontrol"
-  },
-  "hyprland/workspaces": {
-     "format": "{icon}",
-     "on-scroll-up": "hyprctl dispatch workspace e+1",
-     "on-scroll-down": "hyprctl dispatch workspace e-1"
-  },
-  "hyprland/window": {
-    "separate-outputs": true
-  },
-  "backlight/slider": {
-    "min": 0,
-    "max": 100,
-    "orientation": "horizontal",
-    "device": "intel_backlight"
-  },
-"bluetooth": {
-	"format": " {status}",
-	"format-connected": " {device_alias}",
-	"format-connected-battery": " {device_alias} {device_battery_percentage}%",
-	"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-	"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-	"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-	"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%"
-}
-}
+  {
+    "output": "DP-6",
+    "position": "top",
+    "height": 34,
+    "margin-top": 5,
+    "margin-left": 10,
+    "margin-right": 10,
+    "spacing": 0,
+    "reload_style_on_change": true,
+    "modules-left": ["group/workspaces"],
+    "modules-center": [],
+    "modules-right": ["custom/brightness", "group/status", "group/clock"],
+    "include": ["~/.config/waybar/modules.jsonc"],
+    "custom/brightness": {
+      "format": "󰃠 {}",
+      "return-type": "json",
+      "exec": "~/.config/waybar/scripts/brightness.sh DP-6",
+      "on-scroll-up": "~/.config/waybar/scripts/brightness.sh DP-6 up",
+      "on-scroll-down": "~/.config/waybar/scripts/brightness.sh DP-6 down",
+      "interval": 30
+    }
+  }
+]
