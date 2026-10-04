@@ -70,5 +70,6 @@
     "padding": 0
   },
   "tui": "default",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "agentPushNotifEnabled": true
 }
