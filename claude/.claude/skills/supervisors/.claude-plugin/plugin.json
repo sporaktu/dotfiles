@@ -1,0 +1,33 @@
+{
+  "name": "supervisors",
+  "version": "0.2.0",
+  "description": "A pane of animated Clawds, one per agent and dressed by team, showing what each supervisor is doing and how it directs its team",
+  "author": {
+    "name": "Gray Karegeannes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/sporaktu/dotfiles/tree/main/claude/.claude/skills/supervisors",
+  "repository": "https://github.com/sporaktu/dotfiles",
+  "keywords": [
+    "agents",
+    "supervisors",
+    "teams",
+    "pane",
+    "clawd"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open the Supervisors pane automatically",
+      "description": "Open the pane the first time a supervisor appears in a session. Off: open it with /supervisors.",
+      "default": true
+    },
+    "animate": {
+      "type": "boolean",
+      "title": "Animate Clawds",
+      "description": "Play each agent's Clawd loop. Off: every Clawd shows a still frame.",
+      "default": true
+    }
+  }
+}

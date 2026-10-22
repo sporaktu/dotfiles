@@ -1,0 +1,14 @@
+{
+  "name": "sporaktu",
+  "description": "Gray Karegeannes's Claude Code plugins, shipped from his dotfiles",
+  "owner": {
+    "name": "Gray Karegeannes"
+  },
+  "plugins": [
+    {
+      "name": "supervisors",
+      "source": "./claude/.claude/skills/supervisors",
+      "description": "A pane of animated Clawds, one per agent and dressed by team, showing what each supervisor is doing and how it directs its team"
+    }
+  ]
+}
