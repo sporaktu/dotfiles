@@ -3,6 +3,8 @@ function notes
     set -l date_dir (date +%Y-%m-%d)
     set -l timestamp (date +%H-%M-%S)
     set -l datetime (date +"%Y-%m-%d %H:%M:%S")
+    set -l filename
+    set -l header
     
     # Create notes directory if it doesn't exist
     mkdir -p $notes_dir/$date_dir
@@ -15,8 +17,8 @@ function notes
             nvim $existing_day_file
             return
         end
-        set -l filename "$timestamp.md"
-        set -l header "# Notes $datetime"
+        set filename "$timestamp.md"
+        set header "# Notes $datetime"
     else
         # With arguments - check for existing file with same name
         set -l existing_file (ls $notes_dir/$date_dir/$argv-*.md 2>/dev/null | head -1)
@@ -24,8 +26,8 @@ function notes
             nvim $existing_file
             return
         end
-        set -l filename "$argv-$timestamp.md"
-        set -l header "# $argv"
+        set filename "$argv-$timestamp.md"
+        set header "# $argv"
     end
     
     # Create the full file path
