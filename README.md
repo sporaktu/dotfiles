@@ -30,7 +30,8 @@ configs automatically:
 
 3. **Install required packages**
    ```bash
-   brew install git fish starship tmux neovim stow ripgrep
+   brew install git fish starship tmux neovim stow ripgrep jq fzf sesh yazi lazydocker
+   brew install asmvik/formulae/yabai asmvik/formulae/skhd FelixKratz/formulae/sketchybar
    brew install --cask kitty ghostty
    brew install --cask font-meslo-lg-nerd-font font-caskaydia-cove-nerd-font
    ```
@@ -49,7 +50,8 @@ configs automatically:
 
 6. **Link the configurations using stow**
    ```bash
-   stow --target=$HOME/.config fish kitty nvim tmux
+   stow --target=$HOME fish kitty nvim tmux ghostty
+   stow --target=$HOME sketchybar yabai skhd
    ```
    Run `stow` for any other application directories you want to link.
 
@@ -93,7 +95,7 @@ configs automatically:
 
 6. **Use stow to create symlinks**
    ```bash
-   stow --target=$HOME/.config fish kitty nvim tmux
+   stow --target=$HOME fish kitty nvim tmux
    ```
    Add or remove directories from the command as needed for your setup.
 

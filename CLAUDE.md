@@ -17,7 +17,8 @@ This is a comprehensive dotfiles repository that configures a Fish shell-based d
 ### Manual Setup with Stow
 Link configurations to `$HOME`:
 ```bash
-stow --target=$HOME fish kitty nvim tmux ghostty sketchybar superfile yazi claude
+stow --target=$HOME fish kitty nvim tmux ghostty superfile claude
+stow --target=$HOME sketchybar yabai skhd   # macOS only
 ```
 
 Add specific applications as needed:
@@ -39,15 +40,18 @@ stow --target=$HOME APP
 - Prefix: `Ctrl-Space`
 - Auto-starts with both Kitty and Ghostty terminals
 - Plugins: tpm, resurrect, continuum, yank, prefix-highlight
+- Plugin dirs are gitignored: tmux.conf clones tpm on first start, then `prefix + I` installs the rest
 
 ### Window Management (macOS)
-- **AeroSpace**: i3-like tiling window manager (primary)
-- **yabai**: Tiling window manager (legacy, requires SIP disable)
+- **yabai**: Tiling window manager (primary; space focus/move needs the scripting addition, which needs SIP partly disabled)
+- **skhd**: Hotkey daemon driving yabai
 - **sketchybar**: Custom status bar with widgets
+- **AeroSpace**: Alternative i3-like config kept in the repo; not installed or stowed
 - Config files:
-  - `aerospace/.config/aerospace/aerospace.toml`
-  - `yabai/.config/yabai/yabairc` (legacy)
+  - `yabai/.config/yabai/yabairc`
+  - `skhd/.config/skhd/skhdrc`
   - `sketchybar/.config/sketchybar/sketchybarrc`
+  - `aerospace/.config/aerospace/aerospace.toml` (unused)
 - Custom scripts in respective `scripts/` and `plugins/` directories
 
 ### Terminal Emulators
@@ -64,8 +68,7 @@ stow --target=$HOME APP
 
 ### macOS Integration
 - Sketchybar widgets for system monitoring (CPU, RAM, battery, notifications)
-- AeroSpace tiling window manager with i3-like keybindings (Alt+hjkl)
-- yabai (legacy) window management with focus-follows-mouse and custom padding
+- yabai window management with skhd keybindings (Alt+hjkl focus, Shift+Alt+hjkl warp) and custom padding
 - App-specific rules for excluding applications from tiling
 - Display-aware padding adjustment (built-in vs external monitors)
 
@@ -82,8 +85,8 @@ stow --target=$HOME APP
 3. Restart applications or reload configs as needed:
    - Fish: `source ~/.config/fish/config.fish`
    - tmux: `tmux source-file ~/.config/tmux/tmux.conf`
-   - AeroSpace: Config reloads automatically, or use `Alt+Shift+;` then `Esc`
    - yabai: `yabai --restart-service`
+   - skhd: `skhd --reload`
    - sketchybar: `sketchybar --reload`
 
 ### Adding New Applications
@@ -99,8 +102,7 @@ stow --target=$HOME APP
 - Git (for repository management)
 
 ### macOS Specific
-- AeroSpace (via Homebrew: `brew install --cask nikitabobko/tap/aerospace`)
-- yabai, sketchybar (via Homebrew)
+- yabai, skhd (`asmvik/formulae`), sketchybar (`FelixKratz/formulae`), all installed by `install.sh mac`
 - Nerd Fonts (MesloLGS, CaskaydiaCove)
 
 ### Terminal Emulators
