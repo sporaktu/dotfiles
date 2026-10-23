@@ -118,9 +118,10 @@ phase3(){
   pacman -S --needed --noconfirm efibootmgr
   pacman -Rns --noconfirm grub || true
   rm -rf "$ESP/EFI/GRUB" "$ESP/grub"
-  # drop the stale GRUB NVRAM entry, if any
+  # drop the stale GRUB NVRAM entry, if any (no match makes grep exit 1, which
+  # pipefail + set -e would turn into an abort, so the pipeline ends in || true)
   efibootmgr 2>/dev/null | grep -i 'GRUB' | sed -E 's/^Boot([0-9A-Fa-f]{4}).*/\1/' \
-    | while read -r n; do efibootmgr -b "$n" -B >/dev/null 2>&1 || true; done
+    | while read -r n; do efibootmgr -b "$n" -B >/dev/null 2>&1 || true; done || true
   echo ">>> GRUB removed. systemd-boot is now your only bootloader."
 }
 

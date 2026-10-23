@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/env bash
 #
 # backup_home.sh — create a timestamped tar.gz of /home and store it on your flash drive.
