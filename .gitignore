@@ -25,7 +25,7 @@ sketchybar/.config/sketchybar/plugins/*.prev-backup
 # Installer-generated fish snippets (break on machines without the tool)
 fish/.config/fish/conf.d/rustup.fish
 
-# tpm-installed plugin clones (tpm and catppuccin stay tracked as submodules)
+# tpm and its plugin clones (tmux.conf clones tpm on first start; prefix + I installs plugins)
 tmux/.config/tmux/plugins/*
 
 # backup-check machine inventory (hostnames, repo list): generated locally, backed up to OneDrive
