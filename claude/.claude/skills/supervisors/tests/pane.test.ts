@@ -168,6 +168,51 @@ test('a tool call still running after 15 seconds breaks a sweat', async ($, on) 
   await later.unmount()
 })
 
+test('a finished agent celebrates, then leaves the pane; idle and waiting agents stay', async ($, on) => {
+  const agents: AgentInfo[] = [
+    lead('sup-1'),
+    worker('w-1', 'sup-1'),
+    { ...worker('w-2', 'sup-1'), status: 'idle' },
+    { ...worker('w-3', 'sup-1'), status: 'waiting' },
+  ]
+  const all = agents.map(agent => agent.id)
+  const { clock } = await start($, on, agents)
+  const shown = async () => {
+    const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+    const found: string[] = []
+    for (const id of all) {
+      if ((await ui.find({ type: 'Client', key: `clawd-${id}` })) !== undefined) {
+        found.push(id)
+      }
+    }
+    await ui.unmount()
+
+    return found
+  }
+
+  agents[1] = { ...worker('w-1', 'sup-1'), status: 'completed' }
+  await clock.advance(1600)
+  expect(await shown()).toEqual(all)
+  await clock.advance(4500)
+  expect(await shown()).toEqual(['sup-1', 'w-2', 'w-3'])
+
+  // The whole team done: every Clawd falls asleep and leaves.
+  for (const [i, agent] of agents.entries()) {
+    agents[i] = { ...agent, status: 'completed' }
+  }
+  await clock.advance(6000)
+  expect(await shown()).toEqual([])
+  const desktop = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect(await desktop.find({ text: /No supervisors at work/ })).toBeDefined()
+  expect(await desktop.find({ text: /No supervisors yet/ })).toBeUndefined()
+  await desktop.unmount()
+
+  // A message resumes w-1: it comes back, and its supervisor with it.
+  agents[1] = { ...worker('w-1', 'sup-1'), status: 'running' }
+  await clock.advance(1600)
+  expect(await shown()).toEqual(['sup-1', 'w-1'])
+})
+
 // A helper plugin for tests: its tool answers the supervisors rows as stored.
 const PEEK = {
   name: 'peek',

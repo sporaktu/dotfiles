@@ -136,11 +136,23 @@ test('shows each supervisor with what it does and how it directs its team', asyn
     await ui.unmount()
   }
 
+  // Past its celebration the auditor's Clawd falls asleep and leaves the pane;
+  // the team line still counts it.
+  await clock.advance(4500)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    expect(await ui.find({ text: 'Audit routes' })).toBeUndefined()
+    expect(await ui.find({ text: 'Fix token refresh' })).toBeDefined()
+    expect(await ui.find({ text: 'team 2 · 1 active · 1 done' })).toBeDefined()
+    await ui.unmount()
+  }
+
   const outline = await $.tool.call({ tool: 'mcp__supervisors__teams' })
   expect(outline.deny).toBeUndefined()
   expect(String(outline.result)).toContain('Supervisor: auth refactor [running]')
   expect(String(outline.result)).toContain('\n  ● Fix token refresh [running, token-fixer]')
   expect(String(outline.result)).toContain('→ token-fixer: Stop after token.ts and report back')
+  expect(String(outline.result)).toContain('✓ Audit routes [completed]')
 })
 
 // A helper plugin for tests: its tool answers the supervisors rows as stored.

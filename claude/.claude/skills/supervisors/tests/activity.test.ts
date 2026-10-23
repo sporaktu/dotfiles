@@ -1,8 +1,8 @@
 import { expect, test } from 'claude-code/testing'
 
-import { activityOf, isLongOf } from '../hooks/activity'
+import { activityOf, isAsleep, isLongOf } from '../hooks/activity'
 import { buildTree } from '../hooks/model'
-import type { AgentRow } from '../types'
+import type { Activity, AgentRow } from '../types'
 
 const NOW = 100_000
 
@@ -56,6 +56,24 @@ test('a finished agent celebrates for 4 seconds, then rests', () => {
   expect(activity({ status: 'completed', endedAt: NOW - 5000 })).toBe('rest')
   expect(activity({ status: 'completed', endedAt: 0 })).toBe('rest')
   expect(activity({ status: 'completed' })).toBe('rest')
+})
+
+test('an agent is asleep when it rests and so does all its team', () => {
+  const asleep = (fields: Partial<AgentRow>, others: AgentRow[] = []) => {
+    const target = row(fields)
+
+    return isAsleep(target, buildTree([target, ...others]))
+  }
+  const member = (activity: Activity) => row({ id: 'm', parentId: 'a', activity })
+
+  expect(asleep({ status: 'completed', activity: 'rest' })).toBe(true)
+  for (const activity of ['celebrate', 'idle', 'waitTeam', 'failed', 'killed', 'type'] as const) {
+    expect(asleep({ activity })).toBe(false)
+  }
+  expect(asleep({ status: 'completed', activity: 'rest' }, [member('rest')])).toBe(true)
+  expect(asleep({ status: 'completed', activity: 'rest' }, [member('type')])).toBe(false)
+  expect(asleep({ status: 'completed', activity: 'rest' }, [member('failed')])).toBe(false)
+  expect(asleep({ status: 'completed', activity: 'rest' }, [member('idle')])).toBe(false)
 })
 
 test('failed and stopped agents show it', () => {

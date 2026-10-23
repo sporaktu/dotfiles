@@ -43,6 +43,13 @@ export function activityOf(row: AgentRow, tree: Tree, now: number): Activity {
   return row.tool === 'SendMessage' ? 'message' : 'type'
 }
 
+// A Clawd asleep (done a while) whose team, if it leads one, sleeps too: the
+// pane drops its row. Idle and waiting agents stay, waiting for more work, and
+// a message that resumes an agent brings it back.
+export function isAsleep(row: AgentRow, tree: Tree): boolean {
+  return row.activity === 'rest' && (tree.childrenOf.get(row.id) ?? []).every(member => isAsleep(member, tree))
+}
+
 // A tool call still running past 15 seconds: the typing Clawd breaks a sweat.
 export function isLongOf(row: AgentRow, now: number): boolean {
   return row.lastBlock === 'tool' && row.toolSince !== undefined && now - row.toolSince > LONG_TOOL_MS

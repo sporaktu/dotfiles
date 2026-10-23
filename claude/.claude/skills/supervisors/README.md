@@ -5,8 +5,9 @@ A Claude Code pane for sessions where the main agent starts supervisor agents th
 ## What the pane shows
 
 - **Supervisors**: any agent that has started agents of its own, or whose description starts with `Supervisor:`. Each one shows its status, its latest tool call, the last line it wrote, the messages it sent its team, and a team count.
-- **Team members** under their supervisor: the brief the supervisor gave each one and its current tool call. Click a supervisor's row to fold its team; **Hide done** hides finished work; **Full briefs** shows briefs whole.
+- **Team members** under their supervisor: the brief the supervisor gave each one and its current tool call. Click a supervisor's row to fold its team; **Hide done** also hides failed, stopped and just-finished agents; **Full briefs** shows briefs whole.
 - **Other agents**: anything not on a team.
+- **Finished agents leave**: once an agent's Clawd falls asleep, its row goes, unless someone on its team is still at work, idle or failed. Idle and waiting agents stay, since they wait for more work, and a message that resumes an agent brings it back. The `teams` tool still lists everyone.
 
 ### The Clawds
 
@@ -25,7 +26,7 @@ A Claude Code pane for sessions where the main agent starts supervisor agents th
 | waiting on its team | taps a foot, "?" |
 | idle | breathes and blinks |
 | just finished | bounces with hearts, blushing |
-| done a while | sleeps, z's drifting up |
+| done a while | sleeps, z's drifting up, only while its team is still out; otherwise it leaves the pane |
 | failed | under a rain cloud |
 | stopped | looks down |
 

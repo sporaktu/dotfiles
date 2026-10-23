@@ -19,7 +19,7 @@ import {
   oneLine,
   recipient,
 } from './model'
-import { activityOf, isLongOf } from './activity'
+import { activityOf, isAsleep, isLongOf } from './activity'
 import { activityLabel, framesOf, loopOf, outfitName, stillOf } from './clawd'
 import { dressRows } from './outfits'
 import { flipbookSvg } from './svg'
@@ -351,7 +351,7 @@ export const register: Register = (on, options) => {
     const isHidingDone = await read($, hideDone)
     const isFull = await read($, fullBriefs)
     const tree = buildTree(all)
-    const isShown = (row: AgentRow) => !isHidingDone || hasLive(row, tree)
+    const isShown = (row: AgentRow) => !isAsleep(row, tree) && (!isHidingDone || hasLive(row, tree))
 
     const statusOf = (row: AgentRow) =>
       row.startedAt !== undefined && time > 0 && !ENDED.has(row.status)
@@ -487,12 +487,15 @@ export const register: Register = (on, options) => {
             />
           </Box>
         </Box>
-        {leads.length === 0 && (
-          <Text dimColor>
-            No supervisors yet. An agent shows here once it spawns agents of its own, or when its description starts
-            with "Supervisor:".
-          </Text>
-        )}
+        {leads.length === 0 &&
+          (tree.roots.some(row => isSupervisor(row, tree)) ? (
+            <Text dimColor>No supervisors at work. Finished agents leave the pane; the teams tool still lists them.</Text>
+          ) : (
+            <Text dimColor>
+              No supervisors yet. An agent shows here once it spawns agents of its own, or when its description starts
+              with "Supervisor:".
+            </Text>
+          ))}
         {leads.map(row => (
           <Box key={`lead-${row.id}`} flexDirection="column" marginTop={1}>
             {renderAgent(row, 0)}
