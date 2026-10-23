@@ -11,13 +11,17 @@ if [[ $# -ne 1 ]]; then
 fi
 
 OS="$1"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 install_mac() {
   xcode-select --install 2>/dev/null || true
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.profile"
+  # shellcheck disable=SC2016 # written literally; ~/.profile expands it
+  grep -qF 'brew shellenv' "$HOME/.profile" 2>/dev/null ||
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.profile"
   eval "$(/opt/homebrew/bin/brew shellenv)"
-  brew install git fish starship tmux neovim stow ripgrep jq
+  brew install git fish starship tmux neovim stow ripgrep jq fzf sesh yazi lazydocker
+  brew install asmvik/formulae/yabai asmvik/formulae/skhd FelixKratz/formulae/sketchybar
   brew install --cask kitty ghostty
   brew install --cask font-meslo-lg-nerd-font font-caskaydia-cove-nerd-font
 }
@@ -46,9 +50,12 @@ case "$OS" in
 esac
 
 # Stow configs that use ~/.config (APP/.config/APP/ structure)
-stow --target="$HOME" fish kitty nvim tmux ghostty sketchybar superfile yazi || true
+stow --dir="$DOTFILES_DIR" --target="$HOME" fish kitty nvim tmux ghostty superfile
+if [[ "$OS" == mac ]]; then
+  stow --dir="$DOTFILES_DIR" --target="$HOME" sketchybar yabai skhd
+fi
 
 # Stow configs that use ~/  (APP/.APP/ structure)
-stow --target="$HOME" claude || true
+stow --dir="$DOTFILES_DIR" --target="$HOME" claude
 
 echo "Installation complete. Log out and back in for shell changes to take effect."
