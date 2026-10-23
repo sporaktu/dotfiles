@@ -1,6 +1,6 @@
 {
   "name": "supervisors",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A pane of animated Clawds, one per agent and dressed by team, showing what each supervisor is doing and how it directs its team",
   "author": {
     "name": "Gray Karegeannes"
