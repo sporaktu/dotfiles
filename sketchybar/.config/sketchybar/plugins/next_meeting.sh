@@ -6,9 +6,6 @@ if ! pgrep -x "Microsoft Outlook" > /dev/null; then
     exit 0
 fi
 
-# Get today's date in the format Outlook expects
-TODAY=$(date +"%Y-%m-%d")
-
 # Try a simpler approach to get next meeting
 MEETING_INFO=$(osascript << 'EOF'
 try
@@ -56,14 +53,6 @@ end try
 EOF
 )
 
-# Debug: log what we got
-echo "Meeting info: '$MEETING_INFO'" >> /tmp/meeting_debug.log
-echo "Today: $(date)" >> /tmp/meeting_debug.log
-
-# Temporary manual override for testing - replace with your actual meeting info
-# Format: "TIME|MEETING_TITLE" (remove this section once AppleScript works)
-# MEETING_INFO="4:00 PM|Team Standup"
-
 # Parse the meeting info
 if [[ -n "$MEETING_INFO" && "$MEETING_INFO" != "" && "$MEETING_INFO" != "Error:"* ]]; then
     TIME_PART=$(echo "$MEETING_INFO" | cut -d'|' -f1)
@@ -76,9 +65,7 @@ if [[ -n "$MEETING_INFO" && "$MEETING_INFO" != "" && "$MEETING_INFO" != "Error:"
     
     # Update widget with meeting info
     sketchybar --set "$NAME" label="$TIME_PART $TITLE_PART" drawing=on
-    echo "Widget updated with: $TIME_PART $TITLE_PART" >> /tmp/meeting_debug.log
 else
     # No upcoming meetings today
     sketchybar --set "$NAME" drawing=off
-    echo "No meeting found - widget hidden" >> /tmp/meeting_debug.log
 fi

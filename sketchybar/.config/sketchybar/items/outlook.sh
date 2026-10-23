@@ -17,5 +17,6 @@ sketchybar --add item outlook right \
 	background.border_color="$COLOR" \
 	background.drawing=on \
 	update_freq=10 \
+	updates=on \
 	script="$PLUGIN_DIR/outlook.sh" \
 	click_script="open -a 'Microsoft Outlook'"

@@ -5,6 +5,7 @@
 BLACK=0xff24283b
 WHITE=0xffa9b1d6
 MAGENTA=0xffbb9af7
+PURPLE=0xff9d7cd8
 BLUE=0xff7aa2f7
 CYAN=0xff7dcfff
 GREEN=0xff9ece6a
@@ -18,6 +19,7 @@ COMMENT=0xff565f89
 # BLACK=0xffe9e9ed
 # WHITE=0xff3760bf
 # MAGENTA=0xff9854f1
+# PURPLE=0xff7847bd
 # BLUE=0xff2e7de9
 # CYAN=0xff007197
 # GREEN=0xff587539

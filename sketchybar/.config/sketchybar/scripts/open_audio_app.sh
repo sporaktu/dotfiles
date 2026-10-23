@@ -4,11 +4,13 @@
 PLAYING_APP=$(osascript << 'EOF'
 try
     -- Check Apple Music first
-    tell application "Music"
-        if player state is playing then
-            return "Music"
-        end if
-    end tell
+    if application "Music" is running then
+        tell application "Music"
+            if player state is playing then
+                return "Music"
+            end if
+        end tell
+    end if
 on error
 end try
 

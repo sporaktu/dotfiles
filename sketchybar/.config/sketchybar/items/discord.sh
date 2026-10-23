@@ -17,5 +17,6 @@ sketchybar --add item discord right \
 	background.border_color="$COLOR" \
 	background.drawing=on \
 	update_freq=10 \
+	updates=on \
 	script="$PLUGIN_DIR/discord.sh" \
 	click_script="open -a 'Discord'"

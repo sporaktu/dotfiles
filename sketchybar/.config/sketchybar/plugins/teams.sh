@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Check if Microsoft Teams is running
-if ! pgrep -x "Microsoft Teams" > /dev/null; then
+# Check if Microsoft Teams is running (new Teams' process is MSTeams)
+if ! pgrep -x "MSTeams|Microsoft Teams" > /dev/null; then
     sketchybar --set "$NAME" drawing=off
     exit 0
 fi
@@ -11,11 +11,12 @@ fi
 UNREAD_COUNT=$(osascript << 'EOF'
 try
     tell application "System Events"
-        tell process "Microsoft Teams"
+        tell application process "Dock"
             try
-                set badge_value to value of attribute "AXStatusLabel" of UI element 1 of list 1 of application process "Dock"
-                if badge_value is not missing value and badge_value is not "" then
-                    return badge_value as string
+                set teamsTile to (first UI element of list 1 whose name contains "Microsoft Teams")
+                set badgeText to value of attribute "AXStatusLabel" of teamsTile
+                if badgeText is not missing value and badgeText is not "" then
+                    return badgeText as string
                 else
                     return "0"
                 end if
