@@ -74,6 +74,5 @@ lctrl + alt - g : yabai -m space --toggle padding; yabai -m space --toggle gap
 
 # ===== Restart Yabai =====
 shift + lctrl + alt - r : \
-    /usr/bin/env osascript <<< \
-        "display notification \"Restarting Yabai\" with title \"Yabai\""; \
+    /usr/bin/env osascript -e 'display notification "Restarting Yabai" with title "Yabai"'; \
     yabai --restart-service
