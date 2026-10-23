@@ -42,5 +42,6 @@
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
 # Prepend Homebrew's bin so tmux/fish resolve on macOS; harmless on Linux.
-command = PATH="/opt/homebrew/bin:$PATH" exec tmux new-session -A -s main -c ~ 'fish --login --interactive'
+# Use env, not a bare PATH= prefix: macOS Ghostty runs this as `exec -l <command>`.
+command = env PATH="/opt/homebrew/bin:$PATH" tmux new-session -A -s main -c ~ 'fish --login --interactive'
 theme = dark:Catppuccin Frappe,light:Catppuccin Latte
