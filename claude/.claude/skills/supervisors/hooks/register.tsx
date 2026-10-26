@@ -19,21 +19,30 @@ import {
   oneLine,
   recipient,
 } from './model'
-import { activityOf, isAsleep, isLongOf } from './activity'
+import { activityOf, isLongOf, isShown } from './activity'
+import type { View } from './activity'
 import { activityLabel, framesOf, loopOf, outfitName, stillOf } from './clawd'
+import { miniLine } from './mini'
 import { dressRows } from './outfits'
 import { flipbookSvg } from './svg'
 
 const PANE = 'supervisors'
 const TITLE = 'Supervisors'
+// What the pane asks for: rows while inline above the prompt, columns docked.
+const PANE_ROWS = 14
+const PANE_COLUMNS = 60
 const REFRESH_MS = 1500
 const BRIEF_MAX = 400
 const KEPT_DIRECTIONS = 5
 const KEPT_ROWS = 400
 // Typing Clawds past this many, in pane order, tap once a second in the terminal.
 const FAST_TYPISTS = 8
-const SVG_SCALE = 3
+// A terminal Clawd is the 24x16 scene at half scale, in half blocks.
+const CLAWD_COLUMNS = 12
+const CLAWD_ROWS = 4
+const SVG_SCALE = 2
 const FLIPBOOKS_KEPT = 200
+const USAGE = 'Usage: /supervisors [open | close | clear | mini]'
 
 const rows = atom({ plugin: 'supervisors', key: 'rows' } as const, [])
 const now = atom({ plugin: 'supervisors', key: 'now' } as const, 0)
@@ -41,6 +50,8 @@ const collapsed = atom({ plugin: 'supervisors', key: 'collapsed' } as const, [])
 const hideDone = atom({ plugin: 'supervisors', key: 'hideDone' } as const, false)
 const fullBriefs = atom({ plugin: 'supervisors', key: 'fullBriefs' } as const, false)
 const autoOpened = atom({ plugin: 'supervisors', key: 'autoOpened' } as const, false)
+const mini = atom({ plugin: 'supervisors', key: 'mini' } as const, false)
+const cleared = atom({ plugin: 'supervisors', key: 'cleared' } as const, {})
 
 type Seen = {
   says?: string
@@ -99,6 +110,8 @@ type Tracker = {
   isRefreshing: boolean
   lastJson: string
   lastMinute: number
+  // The mini line last pinned under the prompt; undefined when none is.
+  statusText: string | undefined
 }
 
 function newTracker(): Tracker {
@@ -115,7 +128,54 @@ function newTracker(): Tracker {
     isRefreshing: false,
     lastJson: '',
     lastMinute: -1,
+    statusText: undefined,
   }
+}
+
+function openPane($: EngineInterface) {
+  return $.ui.open({ id: PANE, title: TITLE, rows: PANE_ROWS, columns: PANE_COLUMNS })
+}
+
+async function viewOf($: EngineInterface): Promise<View> {
+  return { isHidingDone: await read($, hideDone), cleared: await read($, cleared) }
+}
+
+// Pins the mini line under the prompt when it changed.
+async function pinMini($: EngineInterface, t: Tracker, all: readonly AgentRow[]) {
+  const text = miniLine(all, await viewOf($))
+  if (text !== t.statusText) {
+    t.statusText = text
+    $.ui.status(text)
+  }
+}
+
+async function setMini($: EngineInterface, t: Tracker, isOn: boolean) {
+  const wasOn = await read($, mini)
+  await update($, mini, () => isOn)
+  if (isOn) {
+    await pinMini($, t, await read($, rows))
+  } else if (wasOn) {
+    t.statusText = undefined
+    $.ui.status(undefined)
+  }
+}
+
+// Marks every finished agent with no live team as cleared, keyed by when it
+// ended, and says how many left the pane.
+async function clearFinished($: EngineInterface): Promise<number> {
+  const all = await read($, rows)
+  const tree = buildTree(all)
+  const view = await viewOf($)
+  const marks: Record<string, number> = {}
+  for (const row of all) {
+    if (!hasLive(row, tree)) {
+      marks[row.id] = row.endedAt ?? 0
+    }
+  }
+  await update($, cleared, () => marks)
+  const after = { ...view, cleared: marks }
+
+  return all.filter(row => isShown(row, tree, view) && !isShown(row, tree, after)).length
 }
 
 // Each field falls back to the row already kept, so what was seen before a
@@ -212,6 +272,9 @@ async function refresh($: EngineInterface, t: Tracker, isAutoOpen: boolean) {
       t.lastJson = json
       await $.state.set({ plugin: 'supervisors', key: 'rows' }, next)
     }
+    if (await read($, mini)) {
+      await pinMini($, t, next)
+    }
 
     const minute = Math.floor(time / 60_000) * 60_000
     if (minute !== t.lastMinute && (t.lastMinute === -1 || next.some(row => !ENDED.has(row.status)))) {
@@ -223,7 +286,7 @@ async function refresh($: EngineInterface, t: Tracker, isAutoOpen: boolean) {
     const hasSupervisor = tree.roots.some(row => isSupervisor(row, tree) && hasLive(row, tree))
     if (isAutoOpen && hasSupervisor && !(await read($, autoOpened))) {
       await update($, autoOpened, () => true)
-      void $.ui.open({ id: PANE, title: TITLE })
+      void openPane($)
     }
   } finally {
     t.isRefreshing = false
@@ -238,7 +301,10 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'supervisors',
-      description: 'Show supervisor agents, what they are doing, and how they direct their teams',
+      description:
+        'Show supervisor agents and their teams: open or close the pane, clear finished agents, or shrink it to a line',
+      argumentHint: '[open|close|clear|mini]',
+      immediate: true,
     })
     await $.tool.register({
       name: 'teams',
@@ -265,10 +331,42 @@ export const register: Register = (on, options) => {
 
   on('tool.call', { tool: 'mcp__supervisors__teams' }, async $ => ({ result: formatOutline(await read($, rows)) }))
 
-  on('command.run', { command: 'supervisors' }, async $ => {
-    await $.ui.open({ id: PANE, title: TITLE })
+  // Any of these but clear takes the pane out of auto-open's hands.
+  on('command.run', { command: 'supervisors' }, async ($, e) => {
+    switch (e.args.trim().toLowerCase()) {
+      case '':
+      case 'open':
+        await update($, autoOpened, () => true)
+        await setMini($, t, false)
+        await openPane($)
 
-    return { text: 'Supervisors pane opened.' }
+        return { text: 'Supervisors pane opened.' }
+      case 'close':
+        await update($, autoOpened, () => true)
+        await setMini($, t, false)
+        await $.ui.close({ id: PANE })
+
+        return { text: 'Supervisors pane closed.' }
+      case 'mini':
+        await update($, autoOpened, () => true)
+        await $.ui.close({ id: PANE })
+        await setMini($, t, true)
+
+        return { text: 'Supervisors shrunk to a line under the prompt. /supervisors opens the pane again.' }
+      case 'clear': {
+        const count = await clearFinished($)
+        if (await read($, mini)) {
+          await pinMini($, t, await read($, rows))
+        }
+        if (count === 0) {
+          return { text: 'No finished agents to clear.' }
+        }
+
+        return { text: `Cleared ${count} finished agent${count === 1 ? '' : 's'}.` }
+      }
+      default:
+        return { text: USAGE }
+    }
   })
 
   // The exact brief for each new agent, when this hook hears its spawn. A
@@ -348,10 +446,11 @@ export const register: Register = (on, options) => {
     const all = await read($, rows)
     const time = await read($, now)
     const folded = new Set(await read($, collapsed))
-    const isHidingDone = await read($, hideDone)
+    const view = await viewOf($)
+    const isHidingDone = view.isHidingDone
     const isFull = await read($, fullBriefs)
     const tree = buildTree(all)
-    const isShown = (row: AgentRow) => !isAsleep(row, tree) && (!isHidingDone || hasLive(row, tree))
+    const isVisible = (row: AgentRow) => isShown(row, tree, view)
 
     const statusOf = (row: AgentRow) =>
       row.startedAt !== undefined && time > 0 && !ENDED.has(row.status)
@@ -389,8 +488,8 @@ export const register: Register = (on, options) => {
             key={`clawd-${row.id}`}
             module="./clawd-client.tsx"
             props={{ activity: row.activity, outfit: row.outfit, info, animate: isAnimated }}
-            width={24}
-            height={8}
+            width={CLAWD_COLUMNS}
+            height={CLAWD_ROWS}
           />
         )
       }
@@ -427,7 +526,7 @@ export const register: Register = (on, options) => {
       const isLead = isSupervisor(row, tree)
       const isOpen = !folded.has(row.id)
       const isLive = !ENDED.has(row.status)
-      const team = (tree.childrenOf.get(row.id) ?? []).filter(isShown)
+      const team = (tree.childrenOf.get(row.id) ?? []).filter(isVisible)
 
       return (
         <Box key={`agent-${row.id}`} flexDirection="column" paddingLeft={depth === 0 ? 0 : 2}>
@@ -463,8 +562,8 @@ export const register: Register = (on, options) => {
       )
     }
 
-    const leads = tree.roots.filter(row => isSupervisor(row, tree) && isShown(row))
-    const others = tree.roots.filter(row => !isSupervisor(row, tree) && isShown(row))
+    const leads = tree.roots.filter(row => isSupervisor(row, tree) && isVisible(row))
+    const others = tree.roots.filter(row => !isSupervisor(row, tree) && isVisible(row))
     const members = leads.flatMap(row => descendants(row, tree))
     const active = members.filter(member => !ENDED.has(member.status)).length
 

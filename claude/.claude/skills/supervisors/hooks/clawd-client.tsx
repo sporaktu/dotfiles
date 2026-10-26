@@ -2,15 +2,16 @@ import type { ClientModule } from 'claude-code'
 
 import type { Activity, FrameInfo, Outfit } from '../types'
 import { frameAt, loopOf, stillOf } from './clawd'
-import { halfBlockRows } from './halfblock'
+import { halfBlockRows, halfScale } from './halfblock'
 
 export type ClawdProps = { activity: Activity; outfit: Outfit; info: FrameInfo; animate: boolean }
 
 // Elapsed loop time, and the clock that advances it at the loop's own step.
 type Clock = { t: number; step: number; stop: () => void }
 
-// The terminal's Clawd: draws his frame in half blocks and advances it on the
-// surface's frame clock, so animation costs the hooks module nothing.
+// The terminal's Clawd: draws his frame at half scale in half blocks (12x4
+// cells) and advances it on the surface's frame clock, so animation costs the
+// hooks module nothing.
 const ClawdClient: ClientModule<ClawdProps, Clock> = (props, surface) => {
   const { Box, Text } = surface.elements
   const step = props.animate ? loopOf(props.activity, props.info).step : 0
@@ -29,9 +30,11 @@ const ClawdClient: ClientModule<ClawdProps, Clock> = (props, surface) => {
         : () => {}
     surface.setState({ t, step, stop })
   }
-  const grid = props.animate
-    ? frameAt(props.activity, props.outfit, surface.state?.t ?? 0, props.info)
-    : stillOf(props.activity, props.outfit, props.info)
+  const grid = halfScale(
+    props.animate
+      ? frameAt(props.activity, props.outfit, surface.state?.t ?? 0, props.info)
+      : stillOf(props.activity, props.outfit, props.info),
+  )
 
   return (
     <Box flexDirection="column">

@@ -2,8 +2,8 @@ import { expect, test } from 'claude-code/testing'
 
 import ClawdClient from '../hooks/clawd-client'
 import type { ClawdProps } from '../hooks/clawd-client'
-import { framesOf, loopOf } from '../hooks/clawd'
-import { halfBlockRows } from '../hooks/halfblock'
+import { SCENE, framesOf, frameAt, loopOf } from '../hooks/clawd'
+import { halfBlockRows, halfScale } from '../hooks/halfblock'
 import { flipbookSvg } from '../hooks/svg'
 import type { Activity, Outfit } from '../types'
 
@@ -27,6 +27,31 @@ test('half blocks pack two pixel rows into one text row, merging equal cells', (
       { text: ' ' },
     ],
   ])
+})
+
+test('half scale keeps each 2x2 block as its commonest color, a tie to the rarer one', () => {
+  const grid = [
+    [A, A, A, null, null, null],
+    [A, B, A, A, null, A],
+    [null, null, null, null, null, null],
+    [null, null, null, null, null, null],
+  ]
+  expect(halfScale(grid)).toEqual([
+    [A, A, A],
+    [null, null, null],
+  ])
+  // B is the rarer color, so its tie with A goes to B.
+  expect(halfScale([[A, B], [B, A], [A, A]])).toEqual([[B], [A]])
+})
+
+test('the terminal Clawd is 12 cells wide and 4 rows tall, eyes kept', () => {
+  const small = halfScale(frameAt('idle', BLUE_COWBOY, 0, {}))
+  expect(small.length).toBe(SCENE.height / 2)
+  expect(small.every(row => row.length === SCENE.width / 2)).toBe(true)
+  expect(small.flat().filter(cell => cell === '#000000').length).toBe(2)
+  const rows = halfBlockRows(small)
+  expect(rows.length).toBe(4)
+  expect(rows.every(row => row.reduce((width, segment) => width + segment.text.length, 0) === 12)).toBe(true)
 })
 
 test('every flipbook fits the Svg limit and keeps one group per distinct frame', () => {
@@ -55,8 +80,8 @@ function fakeSurface() {
     setState(next: unknown) {
       surface.state = next
     },
-    columns: 24,
-    rows: 8,
+    columns: 12,
+    rows: 4,
     every(ms: number, fn: () => void) {
       const timer = { ms, fn, isStopped: false }
       timers.push(timer)

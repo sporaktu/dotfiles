@@ -80,6 +80,10 @@ declare module 'claude-code' {
       hideDone: boolean
       fullBriefs: boolean
       autoOpened: boolean
+      // Shrunk to one line under the prompt (/supervisors mini).
+      mini: boolean
+      // Agents /supervisors clear removed, by the endedAt they had then.
+      cleared: Record<string, number>
     }
   }
 }

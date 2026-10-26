@@ -30,12 +30,20 @@ A Claude Code pane for sessions where the main agent starts supervisor agents th
 | failed | under a rain cloud |
 | stopped | looks down |
 
-In a terminal each Clawd is 24 columns by 8 rows, drawn in half-block characters. Past 8 Clawds typing at once, the rest tap once a second so the terminal stays smooth. In the desktop app each Clawd is a small animated image.
+In a terminal each Clawd is 12 columns by 4 rows: the 24×16 scene at half scale, drawn in half-block characters. Past 8 Clawds typing at once, the rest tap once a second so the terminal stays smooth. In the desktop app each Clawd is a small animated image, 48×32. The pane asks for 14 rows inline above the prompt and 60 columns when docked; a size you drag it to wins.
 
 ## Commands and tools
 
-- `/supervisors` opens the pane.
-- The `teams` tool (`mcp__supervisors__teams`) gives the main agent the same tree as text, outfit and loop included, so you can ask "what are my supervisors doing?" without opening the pane.
+| Command | What it does |
+| --- | --- |
+| `/supervisors` or `/supervisors open` | Opens the pane (and drops the mini line). |
+| `/supervisors close` | Closes the pane and the mini line. |
+| `/supervisors clear` | Removes every finished, failed or stopped agent from the pane now, instead of waiting for it to fall asleep. An agent that is resumed comes back; a finished supervisor whose team is still working stays with its team. |
+| `/supervisors mini` | Closes the pane and pins one plain line between the prompt and the status line: each team as `♛ <name>` and one status glyph per member, for example `♛ auth refactor ●●✓ · ♛ docs ◐`. That line takes no color, so teams are told apart by name. Claude Code draws it with its own `⚠ supervisors:` prefix. |
+
+The commands run at once, even mid-turn. Once you run `open`, `close` or `mini`, the pane no longer opens on its own.
+
+The `teams` tool (`mcp__supervisors__teams`) gives the main agent the same tree as text, outfit and loop included, so you can ask "what are my supervisors doing?" without opening the pane. It still lists agents that `clear` removed.
 
 ## Settings
 
