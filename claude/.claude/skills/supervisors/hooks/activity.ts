@@ -1,6 +1,6 @@
 import type { Activity, AgentRow } from '../types'
 
-import { ENDED } from './model'
+import { ENDED, hasLive } from './model'
 import type { Tree } from './model'
 
 export const ARRIVE_MS = 2000
@@ -48,6 +48,19 @@ export function activityOf(row: AgentRow, tree: Tree, now: number): Activity {
 // a message that resumes an agent brings it back.
 export function isAsleep(row: AgentRow, tree: Tree): boolean {
   return row.activity === 'rest' && (tree.childrenOf.get(row.id) ?? []).every(member => isAsleep(member, tree))
+}
+
+// What the person chose to leave out: done agents (Hide done), and agents
+// `/supervisors clear` removed, by the `endedAt` they had when it ran.
+export type View = { isHidingDone: boolean; cleared: Readonly<Record<string, number>> }
+
+// Whether the pane and the mini line show a row. A cleared agent stays gone
+// until it ends again; one leading live work stays with its team.
+export function isShown(row: AgentRow, tree: Tree, view: View): boolean {
+  const isLive = hasLive(row, tree)
+  const isCleared = !isLive && view.cleared[row.id] === (row.endedAt ?? 0)
+
+  return !isAsleep(row, tree) && !isCleared && (!view.isHidingDone || isLive)
 }
 
 // A tool call still running past 15 seconds: the typing Clawd breaks a sweat.
