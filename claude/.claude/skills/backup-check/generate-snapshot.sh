@@ -111,7 +111,7 @@ echo "" >> "$SNAPSHOT_PATH"
 # --- Dotfiles ---
 echo "## 5. Dotfiles (GNU Stow)" >> "$SNAPSHOT_PATH"
 echo "" >> "$SNAPSHOT_PATH"
-echo "Your dotfiles repo manages configs for: fish, ghostty, nvim, sketchybar, skhd, yabai, tmux, yazi, and more." >> "$SNAPSHOT_PATH"
+echo "Your dotfiles repo manages configs for: fish, ghostty, nvim, sketchybar, skhd, yabai, tuios, yazi, and more." >> "$SNAPSHOT_PATH"
 echo "" >> "$SNAPSHOT_PATH"
 echo '```bash' >> "$SNAPSHOT_PATH"
 echo "# Clone dotfiles repo (already in git repos above), then:" >> "$SNAPSHOT_PATH"

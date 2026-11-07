@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a comprehensive dotfiles repository that configures a Fish shell-based development environment with tmux, Neovim, terminal emulators, and macOS window management. The configuration uses GNU Stow for symlink management and supports both macOS and Linux systems.
+This is a comprehensive dotfiles repository that configures a Fish shell-based development environment with tuios, Neovim, terminal emulators, and macOS window management. The configuration uses GNU Stow for symlink management and supports both macOS and Linux systems.
 
 ## Setup and Installation
 
@@ -17,7 +17,7 @@ This is a comprehensive dotfiles repository that configures a Fish shell-based d
 ### Manual Setup with Stow
 Link configurations to `$HOME`:
 ```bash
-stow --target=$HOME fish kitty nvim tmux ghostty superfile claude
+stow --target=$HOME fish kitty nvim tuios ghostty superfile claude
 stow --target=$HOME sketchybar yabai skhd   # macOS only
 ```
 
@@ -35,12 +35,13 @@ stow --target=$HOME APP
 - Custom functions in `fish/.config/fish/functions/`
 
 ### Terminal Multiplexing
-- **tmux**: Session management with plugin support
-- Config: `tmux/.config/tmux/tmux.conf`
-- Prefix: `Ctrl-Space`
-- Auto-starts with both Kitty and Ghostty terminals
-- Plugins: tpm, resurrect, continuum, yank, prefix-highlight
-- Plugin dirs are gitignored: tmux.conf clones tpm on first start, then `prefix + I` installs the rest
+- **tuios**: Terminal multiplexer and window manager with a session daemon and coding-agent support
+- Config: `tuios/.config/tuios/config.toml` (hot-reloaded; settings-page changes are written here, so review them before committing)
+- Per-machine overrides: optional, untracked `~/.config/tuios/local.toml`
+- Leader: `Ctrl-Space`, with the tmux key preset (a tmux window is a workspace, a tmux pane is a window)
+- Auto-starts with both Kitty and Ghostty terminals, attaching to session `main`
+- Claude Code: `tuios integration install claude-code` writes hooks into `settings.json` and a tuios skill; `claude-teams` runs agent teams in panes through `tuios tmux-shim`
+- **tmux**: Previous multiplexer; config kept in `tmux/` but not installed or stowed by `install.sh`
 
 ### Window Management (macOS)
 - **yabai**: Tiling window manager (primary; space focus/move needs the scripting addition, which needs SIP partly disabled)
@@ -55,8 +56,8 @@ stow --target=$HOME APP
 - Custom scripts in respective `scripts/` and `plugins/` directories
 
 ### Terminal Emulators
-- **Kitty**: Uses MesloLGS Nerd Font, Catppuccin theme, launches tmux
-- **Ghostty**: Auto-starts tmux session named "main", uses Catppuccin themes
+- **Kitty**: Uses MesloLGS Nerd Font, Catppuccin theme, launches tuios
+- **Ghostty**: Launches tuios, uses Catppuccin themes
 
 ## Architecture
 
@@ -84,7 +85,7 @@ stow --target=$HOME APP
 2. Changes are immediately reflected via Stow symlinks
 3. Restart applications or reload configs as needed:
    - Fish: `source ~/.config/fish/config.fish`
-   - tmux: `tmux source-file ~/.config/tmux/tmux.conf`
+   - tuios: saves apply at once; `tuios config apply` forces a reload
    - yabai: `yabai --restart-service`
    - skhd: `skhd --reload`
    - sketchybar: `sketchybar --reload`
@@ -98,7 +99,7 @@ stow --target=$HOME APP
 ## Dependencies
 
 ### Core Tools
-- Fish shell, Starship prompt, tmux, Neovim, Stow, ripgrep
+- Fish shell, Starship prompt, tuios, Neovim, Stow, ripgrep
 - Git (for repository management)
 
 ### macOS Specific
@@ -107,4 +108,4 @@ stow --target=$HOME APP
 
 ### Terminal Emulators
 - Kitty and/or Ghostty
-- Both configured to launch tmux automatically
+- Both configured to launch tuios automatically

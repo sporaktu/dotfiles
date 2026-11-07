@@ -28,5 +28,8 @@ fish/.config/fish/conf.d/rustup.fish
 # tpm and its plugin clones (tmux.conf clones tpm on first start; prefix + I installs plugins)
 tmux/.config/tmux/plugins/*
 
+# Per-machine tuios overrides
+tuios/.config/tuios/local.toml
+
 # backup-check machine inventory (hostnames, repo list): generated locally, backed up to OneDrive
 claude/.claude/skills/backup-check/MACHINE-SNAPSHOT.md

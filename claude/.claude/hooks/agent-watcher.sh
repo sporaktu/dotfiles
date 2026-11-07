@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# tmux-agent-watcher.sh
-# PostToolUse hook: opens a tmux pane for each background Claude Code agent.
+# agent-watcher.sh
+# PostToolUse hook: opens a pane for each background Claude Code agent, in tuios
+# or tmux, whichever Claude is running in.
 #
-# Layout: agents open as vertical splits on the right side of the current
+# tuios: the pane joins Claude's workspace, tiled by tuios, without taking focus.
+#
+# tmux layout: agents open as vertical splits on the right side of the current
 # window, stacking below each other. The first agent splits the Claude pane
 # horizontally (right side). Subsequent agents split the rightmost pane
 # vertically (below existing agent panes).
@@ -28,13 +31,6 @@ if [[ "$IS_ASYNC" != "true" ]]; then
     exit 0
 fi
 
-# --- Guard: only act when tmux is available ---
-if [[ -z "${TMUX:-}" ]]; then
-    if ! tmux list-sessions &>/dev/null; then
-        exit 0
-    fi
-fi
-
 # --- Extract output file and description ---
 OUTPUT_FILE=$(echo "$INPUT" | jq -r '.tool_response.outputFile // empty')
 if [[ -z "$OUTPUT_FILE" ]]; then
@@ -42,6 +38,21 @@ if [[ -z "$OUTPUT_FILE" ]]; then
 fi
 
 DESCRIPTION=$(echo "$INPUT" | jq -r '.tool_response.description // .tool_input.description // "agent"')
+
+# --- tuios: argv is passed directly, so nothing needs shell quoting ---
+if [[ -n "${TUIOS_PANE_ID:-}" ]]; then
+    WORKSPACE=$(tuios get-window "$TUIOS_PANE_ID" --json | jq -r '.workspace')
+    tuios new-window "⚡ ${DESCRIPTION:0:25}" --no-focus --workspace "$WORKSPACE" \
+        -- python3 "$HOME/.claude/hooks/watch-agent.py" "$OUTPUT_FILE" "$DESCRIPTION" >/dev/null
+    exit 0
+fi
+
+# --- Guard: only act when tmux is available ---
+if [[ -z "${TMUX:-}" ]]; then
+    if ! tmux list-sessions &>/dev/null; then
+        exit 0
+    fi
+fi
 
 # Use printf %q for safe shell quoting
 SAFE_OUTPUT=$(printf '%q' "$OUTPUT_FILE")

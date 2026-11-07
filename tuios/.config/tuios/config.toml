@@ -1,0 +1,31 @@
+# tuios is the primary multiplexer; kitty and ghostty both launch a plain `tuios`.
+# Stowed from the dotfiles, so changes made in the settings page land here too.
+# Must stay above the first table. local.toml is untracked, per-machine, optional.
+include = ["?local.toml"]
+
+[appearance]
+theme = "catppuccin_frappe"
+theme_light = "catppuccin_latte"
+# Named explicitly: restored shells otherwise take $SHELL from the daemon's environment.
+preferred_shell = "fish"
+
+[startup]
+daemon = true
+tiled = true
+# Plain `tuios` attaches to this session, creating it if needed (tmux new -A -s main).
+session = "main"
+start_in_terminal_mode = true
+open_default_window = true
+
+[keybindings]
+# tmux keys after the leader. A tmux window is a workspace, a tmux pane is a window.
+# Tuios features displaced by the preset live under leader, then ctrl+t.
+preset = "tmux"
+leader_key = "ctrl+space"
+
+# Carried over from tmux.conf: leader + hjkl resizes by 5.
+[keybindings.prefix_mode]
+resize_pane_left_5 = ["h"]
+resize_pane_down_5 = ["j"]
+resize_pane_up_5 = ["k"]
+resize_pane_right_5 = ["l"]

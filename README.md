@@ -1,6 +1,6 @@
 # dotfiles
 
-These dotfiles configure a number of applications such as the Fish shell, Kitty, Ghostty, tmux and other utilities. The main shell used throughout the configuration is **fish** with the [starship](https://starship.rs) prompt.
+These dotfiles configure a number of applications such as the Fish shell, Kitty, Ghostty, tuios and other utilities. The main shell used throughout the configuration is **fish** with the [starship](https://starship.rs) prompt.
 
 Below are quick start instructions for setting up a brand new machine. The steps are separated for macOS and Linux but they share similar requirements.
 
@@ -30,7 +30,7 @@ configs automatically:
 
 3. **Install required packages**
    ```bash
-   brew install git fish starship tmux neovim stow ripgrep jq fzf sesh yazi lazydocker
+   brew install git fish starship tuios neovim stow ripgrep jq fzf yazi lazydocker
    brew install asmvik/formulae/yabai asmvik/formulae/skhd FelixKratz/formulae/sketchybar
    brew install --cask kitty ghostty
    brew install --cask font-meslo-lg-nerd-font font-caskaydia-cove-nerd-font
@@ -50,7 +50,7 @@ configs automatically:
 
 6. **Link the configurations using stow**
    ```bash
-   stow --target=$HOME fish kitty nvim tmux ghostty
+   stow --target=$HOME fish kitty nvim tuios ghostty
    stow --target=$HOME sketchybar yabai skhd
    ```
    Run `stow` for any other application directories you want to link.
@@ -62,8 +62,9 @@ configs automatically:
 1. **Update the system and install basic tools**
    ```bash
    sudo apt update && sudo apt upgrade -y
-   sudo apt install -y git curl fish starship tmux neovim stow ripgrep
+   sudo apt install -y git curl fish starship neovim stow ripgrep
    ```
+   tuios has no apt package. `./install.sh linux` installs a pinned, checksum-verified release; to do it by hand, follow `install_tuios_linux` in `install.sh`.
 
 2. **Install terminal emulators** (optional)
    ```bash
@@ -95,7 +96,7 @@ configs automatically:
 
 6. **Use stow to create symlinks**
    ```bash
-   stow --target=$HOME fish kitty nvim tmux
+   stow --target=$HOME fish kitty nvim tuios
    ```
    Add or remove directories from the command as needed for your setup.
 
