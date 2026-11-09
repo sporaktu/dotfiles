@@ -77,10 +77,23 @@ case "$OS" in
     ;;
 esac
 
+# On macOS tuios reads ~/Library/Application Support/tuios/config.toml unless
+# XDG_CONFIG_HOME is set, and Ghostty/Kitty start tuios without fish's env.
+# Link just the file: that directory also holds the daemon's sessions and log.
+link_tuios_config_mac() {
+  local dir="$HOME/Library/Application Support/tuios"
+  mkdir -p "$dir"
+  if [[ -f "$dir/config.toml" && ! -L "$dir/config.toml" ]]; then
+    mv "$dir/config.toml" "$dir/config.toml.pre-dotfiles"
+  fi
+  ln -sfn "$HOME/.config/tuios/config.toml" "$dir/config.toml"
+}
+
 # Stow configs that use ~/.config (APP/.config/APP/ structure)
 stow --dir="$DOTFILES_DIR" --target="$HOME" fish kitty nvim tuios ghostty superfile
 if [[ "$OS" == mac ]]; then
   stow --dir="$DOTFILES_DIR" --target="$HOME" sketchybar yabai skhd
+  link_tuios_config_mac
 fi
 
 # Stow configs that use ~/  (APP/.APP/ structure)

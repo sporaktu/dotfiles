@@ -38,6 +38,7 @@ stow --target=$HOME APP
 - **tuios**: Terminal multiplexer and window manager with a session daemon and coding-agent support
 - Config: `tuios/.config/tuios/config.toml` (hot-reloaded; settings-page changes are written here, so review them before committing)
 - Per-machine overrides: optional, untracked `~/.config/tuios/local.toml`
+- macOS: tuios reads `~/Library/Application Support/tuios/config.toml`, so `install.sh mac` symlinks that file to `~/.config/tuios/config.toml`
 - Leader: `Ctrl-Space`, with the tmux key preset (a tmux window is a workspace, a tmux pane is a window)
 - Auto-starts with both Kitty and Ghostty terminals, attaching to session `main`
 - Claude Code: `tuios integration install claude-code` writes hooks into `settings.json` and a tuios skill; `claude-teams` runs agent teams in panes through `tuios tmux-shim`
