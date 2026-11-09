@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# tmux-tab-namer.sh
+# tab-namer.sh
 # PostToolUse hook: updates tmux window name and color based on what Claude is doing.
+# Does nothing under tuios, which already shows Claude's own title and agent state.
 #
 # Generates a 1-3 word description from tool context and picks a deterministic
 # background color by hashing the description text.
 
 set -euo pipefail
 
-# Guard: only act when inside tmux
-if [[ -z "${TMUX:-}" ]]; then
+# Guard: only act inside real tmux. The tuios tmux shim also sets $TMUX.
+if [[ -n "${TUIOS_PANE_ID:-}" || -z "${TMUX:-}" ]]; then
     exit 0
 fi
 
