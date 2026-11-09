@@ -8,6 +8,18 @@ theme = "catppuccin_frappe"
 theme_light = "catppuccin_latte"
 # Named explicitly: restored shells otherwise take $SHELL from the daemon's environment.
 preferred_shell = "fish"
+glyphs = "default"
+border_style = "rounded"
+frame_panels = false
+pane_overlays = true
+overlay_border_color = "#52d9c6"
+window_title_style = "tab"
+window_title_align = "auto"
+shared_borders = false
+window_button_style = "dots"
+gap = 0
+tiling_scheme = "spiral"
+popup_dim = 0
 
 [startup]
 daemon = true
