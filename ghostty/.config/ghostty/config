@@ -45,3 +45,7 @@
 # Use env, not a bare PATH= prefix: macOS Ghostty runs this as `exec -l <command>`.
 command = env PATH="/opt/homebrew/bin:$PATH" tuios
 theme = dark:Catppuccin Frappe,light:Catppuccin Latte
+
+# Fullscreen on alt+enter instead of Ghostty's Linux default, ctrl+enter, which goes back to the pane.
+keybind = ctrl+enter=unbind
+keybind = alt+enter=toggle_fullscreen
