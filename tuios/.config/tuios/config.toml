@@ -19,11 +19,19 @@ shared_borders = false
 window_button_style = "dots"
 gap = 0
 tiling_scheme = "spiral"
+# Master-stack (see [startup] layout): the main pane keeps this share of the width
+# and every other pane stacks beside it, so agent panes shrink instead of the main one.
+master_ratio = 60
+# Off: the default shows four or more panes as a grid instead of one main pane and a stack.
+master_grid = false
 popup_dim = 0
 
 [startup]
 daemon = true
 tiled = true
+# New sessions only; a workspace that already exists keeps its layout until
+# leader, space cycles it (BSP, master-stack, scrolling).
+layout = "master-stack"
 # Plain `tuios` attaches to this session, creating it if needed (tmux new -A -s main).
 session = "main"
 start_in_terminal_mode = true
