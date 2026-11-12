@@ -1,0 +1,14 @@
+# Re-applies the Krohnkite timer fix after every install or upgrade.
+# Install: sudo install -Dm755 ~/dotfiles/scripts/.config/scripts/krohnkite-timer-hotfix.sh /usr/local/bin/krohnkite-timer-hotfix
+#          sudo install -Dm644 ~/dotfiles/pacman-hooks/krohnkite-timer-fix.hook /etc/pacman.d/hooks/krohnkite-timer-fix.hook
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = kwin-scripts-krohnkite-git
+Target = kwin-scripts-krohnkite
+
+[Action]
+Description = Applying the Krohnkite timer fix...
+When = PostTransaction
+Exec = /usr/local/bin/krohnkite-timer-hotfix

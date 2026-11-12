@@ -1,0 +1,168 @@
+diff --git a/res/main.qml b/res/main.qml
+index bdb6908..60c8c55 100644
+--- a/res/main.qml
++++ b/res/main.qml
+@@ -105,7 +105,10 @@ Item {
+             // "options": Options,
+             "kwin": KWin,
+             "shortcuts": shortcutsLoader.item.shortcutList,
+-            "dbus": dbusCallLoader.item
++            "dbus": dbusCallLoader.item,
++            // Resolved in this instance; the scriptRoot global in script.js
++            // can still name a previous, destroyed instance after a reload.
++            "timerParent": scriptRoot
+         };
+ 
+         runtime = new K.KWinRuntime(api);
+diff --git a/src/driver/kwinruntime.ts b/src/driver/kwinruntime.ts
+index c14c0f4..6d75f2a 100644
+--- a/src/driver/kwinruntime.ts
++++ b/src/driver/kwinruntime.ts
+@@ -27,6 +27,10 @@ class KWinRuntime {
+ 
+   public start(): void {
+     if (this.driver !== null || this.disposed) return;
++    // Drop timers a previous instance left in the shared pool, then parent
++    // new ones to this instance.
++    KWinTimerPool.instance.dispose();
++    KWinTimerPool.instance.setParent(this.api.timerParent ?? null);
+     const config = new KWinConfig();
+     this.startDriver(config, false);
+   }
+diff --git a/src/driver/kwinsettimeout.ts b/src/driver/kwinsettimeout.ts
+index f3d5180..46e4fd1 100644
+--- a/src/driver/kwinsettimeout.ts
++++ b/src/driver/kwinsettimeout.ts
+@@ -11,15 +11,27 @@ class KWinTimerPool {
+   private timers: QTimer[];
+   private activeTimers: Array<{ timer: QTimer; callback: () => void }>;
+   private generation: number;
++  private parent: object | null;
+   public numTimers: number;
+ 
+   constructor() {
+     this.timers = [];
+     this.activeTimers = [];
+     this.generation = 0;
++    this.parent = null;
+     this.numTimers = 0;
+   }
+ 
++  /**
++   * Parent new timers to the running instance's root item. script.js state can
++   * outlive a script reload, leaving the `scriptRoot` global pointing at the
++   * destroyed root of the previous instance; timers created under it fail with
++   * "Missing parent object" and every deferred call is silently dropped.
++   */
++  public setParent(parent: object | null) {
++    this.parent = parent;
++  }
++
+   public setTimeout(func: () => void, timeout: number) {
+     if (this.timers.length === 0) {
+       this.numTimers++;
+@@ -32,7 +44,10 @@ class KWinTimerPool {
+ 
+     const timer: QTimer =
+       this.timers.pop() ||
+-      Qt.createQmlObject("import QtQuick 2.0; Timer {}", scriptRoot);
++      Qt.createQmlObject(
++        "import QtQuick 2.0; Timer {}",
++        this.parent !== null ? this.parent : scriptRoot,
++      );
+ 
+     const generation = this.generation;
+     const callback = () => {
+diff --git a/src/extern/global.d.ts b/src/extern/global.d.ts
+index 0a470f6..f131c98 100644
+--- a/src/extern/global.d.ts
++++ b/src/extern/global.d.ts
+@@ -17,6 +17,8 @@ interface Api {
+   kwin: KWin;
+   shortcuts: ShortcutsQml;
+   dbus: IDBusQml;
++  /** Root item of the running script instance; parents dynamic timers. */
++  timerParent?: object;
+ }
+ declare var KWINCONFIG: KWinConfig;
+ /* QML objects */
+diff --git a/tests/timerpool.test.cjs b/tests/timerpool.test.cjs
+new file mode 100644
+index 0000000..7907b58
+--- /dev/null
++++ b/tests/timerpool.test.cjs
+@@ -0,0 +1,74 @@
++/*
++    SPDX-FileCopyrightText: 2026 Krohnkite contributors
++
++    SPDX-License-Identifier: MIT
++*/
++
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const vm = require('node:vm');
++const { test } = require('node:test');
++const ts = require('typescript');
++
++const ROOT = path.resolve(__dirname, '..');
++
++// After a script reload, script.js's globals can still point at the previous
++// instance: `scriptRoot` is that instance's destroyed root item. Creating a
++// timer under it fails with "Missing parent object", which silently drops
++// every deferred call (enforceSize, forced arrange).
++function loadPool() {
++  const source = ts.transpileModule(
++    fs.readFileSync(path.join(ROOT, 'src/driver/kwinsettimeout.ts'), 'utf8'),
++    { compilerOptions: { target: ts.ScriptTarget.ES2015 } },
++  ).outputText;
++  const deadRoot = { destroyed: true };
++  const liveRoot = { destroyed: false };
++  const created = [];
++  const Qt = {
++    createQmlObject(_qml, parent) {
++      if (!parent || parent.destroyed)
++        throw new Error('Qt.createQmlObject(): Missing parent object');
++      const handlers = [];
++      const timer = {
++        parent,
++        interval: 0,
++        repeat: true,
++        triggered: {
++          connect: (fn) => handlers.push(fn),
++          disconnect: (fn) => handlers.splice(handlers.indexOf(fn), 1),
++        },
++        start() {},
++        stop() {},
++        destroy() {},
++        fire: () => handlers.slice().forEach((fn) => fn()),
++      };
++      created.push(timer);
++      return timer;
++    },
++  };
++  const context = vm.createContext({ Qt, scriptRoot: deadRoot, LOG: undefined });
++  const KWinTimerPool = vm.runInContext(`${source}\nKWinTimerPool`, context);
++  return { KWinTimerPool, liveRoot, created };
++}
++
++test('timers are parented to the live root, not a stale scriptRoot global', () => {
++  const { KWinTimerPool, liveRoot, created } = loadPool();
++  KWinTimerPool.instance.setParent(liveRoot);
++
++  let ran = false;
++  KWinTimerPool.instance.setTimeout(() => (ran = true), 10);
++
++  assert.equal(created.length, 1);
++  assert.equal(created[0].parent, liveRoot);
++  created[0].fire();
++  assert.equal(ran, true);
++});
++
++test('without a parent it falls back to the scriptRoot global', () => {
++  const { KWinTimerPool } = loadPool();
++  assert.throws(
++    () => KWinTimerPool.instance.setTimeout(() => {}, 10),
++    /Missing parent object/,
++  );
++});
