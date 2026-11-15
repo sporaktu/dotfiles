@@ -11,6 +11,10 @@ fish_add_path "$VOLTA_HOME/bin"
 fish_add_path $HOME/.local/bin
 set -gx EDITOR nvim
 set -gx VISUAL nvim
+# Linux /tmp is tmpfs (RAM); keep Claude Code temp files on disk, aged out by user-tmpfiles.d
+if test (uname) = Linux
+    set -gx CLAUDE_CODE_TMPDIR $HOME/.cache/claude-tmp
+end
 alias localllama="python3 ~/claude_local.py"
 
 # TUI tools: aerc, calcurse, nchat, k9s, btop, nb, posting
