@@ -49,3 +49,10 @@ resize_pane_left_5 = ["h"]
 resize_pane_down_5 = ["j"]
 resize_pane_up_5 = ["k"]
 resize_pane_right_5 = ["l"]
+
+# Dev VM: new window that handles az login, VM start, VPN and the SSH cert, then lands in a shell
+[[keybindings.command]]
+key = "prefix+ctrl+v"
+type = "shell"
+command = "/Users/gray.karegeannes/cloud-workspace/devvm/devvm-window.sh"
+description = "New window on the dev VM"
