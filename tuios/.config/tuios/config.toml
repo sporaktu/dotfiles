@@ -54,5 +54,5 @@ resize_pane_right_5 = ["l"]
 [[keybindings.command]]
 key = "prefix+ctrl+v"
 type = "shell"
-command = "/Users/gray.karegeannes/cloud-workspace/devvm/devvm-window.sh"
+command = "~/.config/tuios/scripts/devvm-win.sh"
 description = "New window on the dev VM"
