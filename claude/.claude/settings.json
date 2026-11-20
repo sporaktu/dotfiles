@@ -1,6 +1,12 @@
 {
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "allow": [
+      "mcp__claude_ai_Microsoft_365__teams_list_channel_messages",
+      "mcp__claude_ai_Microsoft_365__teams_list_channels",
+      "mcp__claude_ai_Microsoft_365__teams_list_chats",
+      "mcp__claude_ai_Microsoft_365__teams_list_teams"
+    ]
   },
   "model": "opus[1m]",
   "hooks": {
@@ -219,7 +225,8 @@
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/statusline.sh",
-    "padding": 0
+    "padding": 0,
+    "refreshInterval": 3
   },
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,

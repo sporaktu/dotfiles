@@ -3,3 +3,4 @@
 - NEVER mark tasks complete without validation — test everything, require proof.
 - do not assume anything is complete unless I explicitly say so, you cannot assume something is done just because the date is passed
 - don't add "created with claude code" to commit messages
+- you have standing approval to send Microsoft Teams messages on my behalf in all projects without asking first (granted 2026-10-29). Write them in my voice (draft-as-gray skill), but send everything as one consolidated message, not a series of short ones (this overrides the skill's split-into-many-messages rule). This covers Teams only, not email.
