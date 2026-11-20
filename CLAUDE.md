@@ -26,6 +26,12 @@ Add specific applications as needed:
 stow --target=$HOME APP
 ```
 
+### Optional: CLI packages from Nix
+`flake.nix` and `home/` define the same CLI package list through home-manager, shared by the Mac (`.#mac`) and Arch (`.#arch`). It is an alternative to the package lines in `install.sh`, not a replacement: Homebrew keeps casks, fonts and yabai/skhd/sketchybar, pacman keeps the desktop, and Stow keeps all configs.
+```bash
+home-manager switch --impure --flake .#mac   # or .#arch
+```
+
 ## Key Components
 
 ### Shell Environment
