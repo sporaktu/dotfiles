@@ -5,9 +5,10 @@
 #   3. Check Point VPN: opens the login if it isn't connected, then waits for you to finish it
 #   4. Waits for sshd, then ssh's in (the Entra SSH cert is refreshed by devvm-access.sh via ~/.ssh/config)
 #
-# Usage: devvm-win [-t] [-n NAME]
+# Usage: devvm-win [-t] [-n NAME] [-r CMD]
 #   -t       attach the persistent tmux session "main" instead of a fresh shell (ssh devvm-tmux)
 #   -n NAME  tuios window name (default: devvm)
+#   -r CMD   run CMD on the VM in a terminal instead of a shell (devvm-sessions: devvm-agent attach NAME)
 # Outside tuios (or with --here) it runs in the current terminal instead of opening a window.
 set -euo pipefail
 
@@ -37,14 +38,16 @@ az_() { az "$@" --subscription "$DEVVM_SUBSCRIPTION"; }
 # ---- launcher: re-run this script inside a new tuios window ----
 name="devvm"
 mode="launch"
+remote_cmd=""
 args=()
 while (($#)); do
   case $1 in
     -t) SSH_HOST_ALIAS="devvm-tmux"; args+=(-t) ;;
     -n) name="$2"; shift ;;
+    -r) remote_cmd="$2"; args+=(-r "$2"); shift ;;
     --here) mode="here" ;;
     --inner) mode="here" ;;
-    -h | --help) sed -n '2,11p' "$SELF"; exit 0 ;;
+    -h | --help) sed -n '2,12p' "$SELF"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
   shift
@@ -95,4 +98,6 @@ if ! port_open; then
 fi
 
 say "Connecting ($SSH_HOST_ALIAS)"
+# -r: the devvm alias (not devvm-tmux, whose RemoteCommand would clash), with a terminal
+[[ -n $remote_cmd ]] && exec ssh -t devvm "$remote_cmd"
 exec ssh "$SSH_HOST_ALIAS"
