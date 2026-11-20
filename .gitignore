@@ -33,3 +33,7 @@ tuios/.config/tuios/local.toml
 
 # backup-check machine inventory (hostnames, repo list): generated locally, backed up to OneDrive
 claude/.claude/skills/backup-check/MACHINE-SNAPSHOT.md
+
+# Nix build output symlinks
+/result
+/result-*

@@ -26,16 +26,6 @@ master_ratio = 60
 master_grid = false
 popup_dim = 0
 
-# Dev VM sessions: "devvm 2" (running Claude sessions per machine) refreshed every 30s; click to pick one.
-# The default right side, with the VM cell first.
-[dock]
-right = ["custom/devvm", "transfers", "notifications", "copy-help", "cpu", "ram", "clock", "session-controls"]
-
-[dock.custom.devvm]
-command = "~/.config/tuios/scripts/devvm-sessions.sh dock"
-refresh = "30s"
-on-click = "~/.config/tuios/scripts/devvm-sessions.sh pick"
-
 [startup]
 daemon = true
 tiled = true
@@ -59,17 +49,3 @@ resize_pane_left_5 = ["h"]
 resize_pane_down_5 = ["j"]
 resize_pane_up_5 = ["k"]
 resize_pane_right_5 = ["l"]
-
-# Dev VM: new window that handles az login, VM start, VPN and the SSH cert, then lands in a shell
-[[keybindings.command]]
-key = "prefix+ctrl+v"
-type = "shell"
-command = "~/.config/tuios/scripts/devvm-win.sh"
-description = "New window on the dev VM"
-
-# Dev VM sessions: pick a running Claude session on the VM(s) and reopen it (enter: new workspace, ctrl-p: pane)
-[[keybindings.command]]
-key = "prefix+ctrl+a"
-type = "shell"
-command = "~/.config/tuios/scripts/devvm-sessions.sh pick"
-description = "Reopen a Claude session on the dev VM"

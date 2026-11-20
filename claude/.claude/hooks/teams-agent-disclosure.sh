@@ -31,9 +31,18 @@ jq -c --arg sig "$SIGNATURE" --arg allowed "$ALLOWED_TAGS" '
   def rtrim: sub("\\s+$"; "");
   # Safe when no "<" is left once the allowed tags are removed.
   def safe: gsub($allowed; ""; "i") | test("<") | not;
+  # Drop any sign-off the agent wrote itself, so exactly one canonical line
+  # ends up on the message: a "Sent by Claude on Gray'"'"'s behalf" line in any
+  # apostrophe or markup, and the retired " -- Hans 🤖" signature.
+  def unsign:
+    def once:
+      sub("(?:\\s|<br\\s*/?>|&nbsp;)*(?:<p>\\s*)?(?:<(?:em|i)>\\s*)?[_*]?\\s*sent by claude on gray(?:'"'"'|’|&#39;|&#x27;|&apos;|&rsquo;)s behalf\\.?\\s*[_*]?(?:\\s*</(?:em|i)>)?(?:\\s*</p>)?\\s*$"; ""; "i")
+      | sub("\\s*(?:&nbsp;)?\\s*(?:--|—|–|&mdash;|&ndash;)\\s*hans\\s*(?:🤖)?\\s*(?<close>(?:</(?:em|i)>\\s*)?</p>)?\\s*$"; "\(.close // "")"; "i")
+      | sub("(?:\\s|<br\\s*/?>)*<p>\\s*</p>\\s*$"; "");
+    (once) as $next | if $next == . then . else ($next | unsign) end;
   .tool_input as $in
   | if ($in.body // "" | type) != "string" then error("body is not a string") else . end
-  | ($in.body // "" | rtrim) as $body
+  | ($in.body // "" | unsign | rtrim) as $body
   | ("<p><em>" + ($sig | esc) + "</em></p>") as $line
   | if ($in.bodyType // "text") == "html" then
       if ($body | safe | not) then
