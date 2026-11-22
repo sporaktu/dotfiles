@@ -1,12 +1,16 @@
 {
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:18787/bili/https://api.anthropic.com",
+    "DISABLE_AUTO_COMPACT": "1"
+  },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "mcp__claude_ai_Microsoft_365__teams_list_channel_messages",
       "mcp__claude_ai_Microsoft_365__teams_list_channels",
       "mcp__claude_ai_Microsoft_365__teams_list_chats",
       "mcp__claude_ai_Microsoft_365__teams_list_teams"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "model": "opus[1m]",
   "hooks": {
@@ -35,9 +39,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -46,9 +50,27 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/gray/.local/lib/node_modules/billion-context/dist/claude-native-bootstrap.js"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/gray/.claude/hooks/dotfiles-sync.mts start",
+            "timeout": 30
           }
         ]
       }
@@ -57,9 +79,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -68,9 +90,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -79,9 +101,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 310,
-            "type": "command"
+            "timeout": 310
           }
         ]
       }
@@ -90,9 +112,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -101,9 +123,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -112,9 +134,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -123,9 +145,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -134,9 +156,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -145,9 +167,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -156,9 +178,18 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/gray/.claude/hooks/dotfiles-sync.mts end",
+            "timeout": 30
           }
         ]
       }
@@ -167,9 +198,17 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/gray/.local/lib/node_modules/billion-context/dist/claude-subagent-hook.js"
           }
         ]
       }
@@ -178,13 +217,19 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "tuios agent-hook claude-code --integration 3",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "$HOME/.claude/statusline.sh",
+    "padding": 0,
+    "refreshInterval": 3
   },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
@@ -220,14 +265,18 @@
     "postman@claude-plugins-official": true,
     "microsoft-docs@claude-plugins-official": true,
     "brightdata-plugin@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": false
+    "swift-lsp@claude-plugins-official": false,
+    "cc-safety-net@cc-marketplace": true
   },
-  "statusLine": {
-    "type": "command",
-    "command": "$HOME/.claude/statusline.sh",
-    "padding": 0,
-    "refreshInterval": 3
+  "extraKnownMarketplaces": {
+    "cc-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "kenryu42/cc-marketplace"
+      }
+    }
   },
+  "advisorModel": "claude-fable-5-2",
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "agentPushNotifEnabled": true
