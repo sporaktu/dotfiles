@@ -1,10 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { commitMessage, findSecrets, pullFastForward, syncOut } from "./lib.ts";
+import { commitMessage, ensureCleanFilter, findSecrets, pullFastForward, pushDetached, syncOut, unpushed } from "./lib.ts";
+
+// Isolate from the user's global git config (gpgsign, hooksPath, pull.rebase...).
+process.env.GIT_CONFIG_GLOBAL = "/dev/null";
+
+// Secret-shaped fixtures are built by concatenation so this file never matches the scanner itself.
+const FAKE = {
+	sk: "sk" + "-ant-api03-abcdefghijklmnopqrstuv",
+	aiza: "AI" + "zaSyA1234567890abcdefghijklmnopqrstu",
+	ghp: "gh" + "p_abcdefghijklmnopqrstuvwxyz0123456789",
+	pem: "-----BEGIN OPENSSH " + "PRIVATE KEY-----",
+	apiKey: '{"api' + 'Key": "abc"}',
+};
 
 const sh = (cwd: string, ...args: string[]) =>
 	execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
@@ -33,11 +45,11 @@ function setup() {
 }
 
 test("findSecrets flags common key shapes", () => {
-	assert.deepEqual(findSecrets("key: sk-ant-api03-abcdefghijklmnopqrstuv").length, 1);
-	assert.equal(findSecrets("AIzaSyA1234567890abcdefghijklmnopqrstu").length, 1);
-	assert.equal(findSecrets("ghp_abcdefghijklmnopqrstuvwxyz0123456789").length, 1);
-	assert.equal(findSecrets("-----BEGIN OPENSSH PRIVATE KEY-----").length, 1);
-	assert.equal(findSecrets('{"apiKey": "abc"}').length, 1);
+	for (const s of Object.values(FAKE)) assert.equal(findSecrets(s).length, 1, s);
+});
+
+test("this test file does not trip the scanner", () => {
+	assert.deepEqual(findSecrets(readFileSync(new URL(import.meta.url), "utf8")), []);
 });
 
 test("findSecrets ignores normal settings content", () => {
@@ -71,7 +83,7 @@ test("syncOut includes new untracked files under pi/", async () => {
 test("syncOut refuses to commit a secret", async () => {
 	const { a } = setup();
 	const head = sh(a, "rev-parse", "HEAD");
-	writeFileSync(join(a, "pi", "settings.json"), '{"token":"ghp_abcdefghijklmnopqrstuvwxyz0123456789"}\n');
+	writeFileSync(join(a, "pi", "settings.json"), `{"token":"${FAKE.ghp}"}\n`);
 	const res = await syncOut(a, "mbp");
 	assert.equal(res.committed, false);
 	assert.match(res.reason ?? "", /secret/i);
@@ -129,4 +141,66 @@ test("pullFastForward reports failure without throwing when the remote is gone",
 	sh(b, "remote", "set-url", "origin", "/nonexistent/remote.git");
 	const res = await pullFastForward(b);
 	assert.equal(res.ok, false);
+});
+
+test("syncOut scans files that were already staged", async () => {
+	const { a } = setup();
+	const head = sh(a, "rev-parse", "HEAD");
+	writeFileSync(join(a, "pi", "settings.json"), `{"token":"${FAKE.ghp}"}\n`);
+	sh(a, "add", "pi/settings.json");
+	const res = await syncOut(a, "mbp");
+	assert.equal(res.committed, false);
+	assert.match(res.reason ?? "", /secret/i);
+	assert.equal(sh(a, "rev-parse", "HEAD"), head);
+});
+
+test("syncOut does nothing off the sync branch", async () => {
+	const { a } = setup();
+	sh(a, "checkout", "-qb", "feature");
+	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
+	const res = await syncOut(a, "mbp");
+	assert.equal(res.committed, false);
+	assert.match(res.reason ?? "", /not on main/);
+});
+
+test("syncOut does nothing while a merge or rebase is in progress", async () => {
+	const { a } = setup();
+	writeFileSync(join(a, ".git", "MERGE_HEAD"), `${sh(a, "rev-parse", "HEAD")}\n`);
+	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
+	const res = await syncOut(a, "mbp");
+	assert.equal(res.committed, false);
+	assert.match(res.reason ?? "", /in progress/);
+});
+
+test("unpushed counts sync commits and flags foreign ones", async () => {
+	const { a } = setup();
+	assert.deepEqual(await unpushed(a), { count: 0, onlySync: true });
+	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
+	await syncOut(a, "mbp");
+	assert.deepEqual(await unpushed(a), { count: 1, onlySync: true });
+	writeFileSync(join(a, "other.txt"), "mine\n");
+	sh(a, "commit", "-qam", "private work");
+	assert.deepEqual(await unpushed(a), { count: 2, onlySync: false });
+});
+
+test("pushDetached lands the sync commit on the remote", async () => {
+	const { a, b } = setup();
+	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
+	await syncOut(a, "mbp");
+	pushDetached(a, join(a, ".git", "push.log"));
+	const want = sh(a, "rev-parse", "HEAD");
+	for (let i = 0; i < 50; i++) {
+		sh(b, "fetch", "-q");
+		if (sh(b, "rev-parse", "origin/main") === want) return;
+		await new Promise((r) => setTimeout(r, 100));
+	}
+	assert.fail("push never reached the remote");
+});
+
+test("ensureCleanFilter configures the filter when missing", async () => {
+	const { a } = setup();
+	assert.equal(await ensureCleanFilter(a), "set");
+	assert.match(sh(a, "config", "--get", "filter.pi-settings.clean"), /lastChangelogVersion/);
+	assert.equal(await ensureCleanFilter(a), "ok");
+	assert.ok(existsSync(join(a, ".git")));
 });
