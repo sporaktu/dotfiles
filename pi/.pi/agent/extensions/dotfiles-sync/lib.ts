@@ -3,9 +3,14 @@ import { spawn } from "node:child_process";
 import { closeSync, existsSync, openSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** Only this subtree is ever staged or committed. */
-export const SYNC_PATH = "pi/";
-const SUBJECT_PREFIX = "chore(pi): sync config from ";
+/** A synced subtree: only `path` is ever staged or committed, under a `chore(<label>):` subject. */
+export type Scope = { path: string; label: string };
+export const PI: Scope = { path: "pi/", label: "pi" };
+export const CLAUDE: Scope = { path: "claude/", label: "claude" };
+/** Subjects of sync commits from any harness; all of them are safe to publish. */
+const SYNC_SUBJECT = /^chore\((?:pi|claude)\): sync config from /;
+/** Kept for callers that only care about Pi. */
+export const SYNC_PATH = PI.path;
 const FILTER_CLEAN = "jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)'";
 
 const SECRET_PATTERNS: Array<[string, RegExp]> = [
@@ -22,8 +27,8 @@ export function findSecrets(text: string): string[] {
 	return SECRET_PATTERNS.filter(([, re]) => re.test(text)).map(([name]) => name);
 }
 
-export function commitMessage(host: string): string {
-	return `${SUBJECT_PREFIX}${host}`;
+export function commitMessage(host: string, scope: Scope = PI): string {
+	return `chore(${scope.label}): sync config from ${host}`;
 }
 
 const GIT_ENV = { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_SSH_COMMAND: process.env.GIT_SSH_COMMAND ?? "ssh -o BatchMode=yes" };
@@ -65,8 +70,9 @@ export async function pullFastForward(repo: string): Promise<{ ok: boolean; msg:
 
 const lines = (s: string) => s.split("\0").filter(Boolean);
 
-/** Commit changes under pi/ (secret-scanned) on `branch` only, without touching anything else in the index. Does not push. */
-export async function syncOut(repo: string, host: string, branch = "main"): Promise<{ committed: boolean; reason?: string }> {
+/** Commit changes under scope.path (secret-scanned) on `branch` only, without touching anything else in the index. Does not push. */
+export async function syncOut(repo: string, host: string, branch = "main", scope: Scope = PI): Promise<{ committed: boolean; reason?: string }> {
+	const SYNC_PATH = scope.path;
 	const head = await git(repo, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
 	if (head.out !== branch) return { committed: false, reason: `not on ${branch} (on ${head.out || "detached HEAD"})` };
 	const dir = await gitDir(repo);
@@ -98,8 +104,8 @@ export async function syncOut(repo: string, host: string, branch = "main"): Prom
 	// status can flag files whose clean-filtered content is unchanged (e.g. only Pi version keys moved).
 	const staged = await git(repo, ["diff", "--cached", "--quiet", "--", SYNC_PATH]);
 	if (staged.code === 0) return { committed: false, reason: "no changes" };
-	// Pathspec commit (--only) records just pi/, leaving other staged work staged.
-	const commit = await git(repo, ["commit", "--quiet", "--no-verify", "-m", commitMessage(host), "--", SYNC_PATH]);
+	// Pathspec commit (--only) records just scope.path, leaving other staged work staged.
+	const commit = await git(repo, ["commit", "--quiet", "--no-verify", "-m", commitMessage(host, scope), "--", SYNC_PATH]);
 	if (commit.code !== 0) return { committed: false, reason: `git commit failed: ${commit.out}` };
 	return { committed: true };
 }
@@ -109,10 +115,10 @@ export async function unpushed(repo: string): Promise<{ count: number; onlySync:
 	const r = await git(repo, ["log", "--format=%s", "@{u}..HEAD"]);
 	if (r.code !== 0) return { count: -1, onlySync: false };
 	const subjects = r.out ? r.out.split("\n") : [];
-	return { count: subjects.length, onlySync: subjects.every((s) => s.startsWith(SUBJECT_PREFIX)) };
+	return { count: subjects.length, onlySync: subjects.every((s) => SYNC_SUBJECT.test(s)) };
 }
 
-/** Push in a detached process so Pi can exit immediately; output goes to logPath. */
+/** Push in a detached process so the harness can exit immediately; output goes to logPath. */
 export function pushDetached(repo: string, logPath: string): void {
 	const fd = openSync(logPath, "a");
 	try {

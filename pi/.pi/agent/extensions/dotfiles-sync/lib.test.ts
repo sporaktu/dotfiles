@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { commitMessage, ensureCleanFilter, findSecrets, pullFastForward, pushDetached, syncOut, unpushed } from "./lib.ts";
+import { CLAUDE, commitMessage, ensureCleanFilter, findSecrets, pullFastForward, pushDetached, syncOut, unpushed } from "./lib.ts";
 
 // Isolate from the user's global git config (gpgsign, hooksPath, pull.rebase...).
 process.env.GIT_CONFIG_GLOBAL = "/dev/null";
@@ -36,6 +36,8 @@ function setup() {
 	const a = clone("a");
 	mkdirSync(join(a, "pi"));
 	writeFileSync(join(a, "pi", "settings.json"), '{"packages":[]}\n');
+	mkdirSync(join(a, "claude"));
+	writeFileSync(join(a, "claude", "settings.json"), '{"hooks":{}}\n');
 	writeFileSync(join(a, "other.txt"), "x\n");
 	sh(a, "add", ".");
 	sh(a, "commit", "-qm", "init");
@@ -203,4 +205,32 @@ test("ensureCleanFilter configures the filter when missing", async () => {
 	assert.match(sh(a, "config", "--get", "filter.pi-settings.clean"), /lastChangelogVersion/);
 	assert.equal(await ensureCleanFilter(a), "ok");
 	assert.ok(existsSync(join(a, ".git")));
+});
+
+test("claude scope commits only claude/ under its own subject", async () => {
+	const { a } = setup();
+	writeFileSync(join(a, "claude", "settings.json"), '{"hooks":{"x":1}}\n');
+	writeFileSync(join(a, "pi", "settings.json"), '{"packages":["npm:y"]}\n');
+	const res = await syncOut(a, "mbp", "main", CLAUDE);
+	assert.equal(res.committed, true);
+	assert.equal(sh(a, "log", "-1", "--format=%s"), "chore(claude): sync config from mbp");
+	assert.equal(sh(a, "show", "--name-only", "--format=", "HEAD"), "claude/settings.json");
+	assert.match(sh(a, "status", "--porcelain"), /pi\/settings.json/);
+});
+
+test("unpushed treats pi and claude sync commits alike", async () => {
+	const { a } = setup();
+	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
+	await syncOut(a, "mbp");
+	writeFileSync(join(a, "claude", "settings.json"), "{}\n");
+	await syncOut(a, "mbp", "main", CLAUDE);
+	assert.deepEqual(await unpushed(a), { count: 2, onlySync: true });
+});
+
+test("claude scope still refuses secrets", async () => {
+	const { a } = setup();
+	writeFileSync(join(a, "claude", "settings.json"), FAKE.sk);
+	const res = await syncOut(a, "mbp", "main", CLAUDE);
+	assert.equal(res.committed, false);
+	assert.match(res.reason ?? "", /possible secret/);
 });
