@@ -72,6 +72,9 @@ export async function syncOut(repo: string, host: string): Promise<{ committed: 
 
 	const add = await git(repo, ["add", "-A", "--", SYNC_PATH]);
 	if (add.code !== 0) return { committed: false, reason: `git add failed: ${add.out}` };
+	// status can flag files whose clean-filtered content is unchanged (e.g. only Pi version keys moved).
+	const staged = await git(repo, ["diff", "--cached", "--quiet", "--", SYNC_PATH]);
+	if (staged.code === 0) return { committed: false, reason: "no changes" };
 	// Pathspec commit (--only) records just pi/, leaving other staged work staged.
 	const commit = await git(repo, ["commit", "--quiet", "--no-verify", "-m", commitMessage(host), "--", SYNC_PATH]);
 	if (commit.code !== 0) return { committed: false, reason: `git commit failed: ${commit.out}` };

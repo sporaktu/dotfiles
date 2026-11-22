@@ -85,6 +85,22 @@ test("syncOut does nothing without changes", async () => {
 	assert.equal(res.committed, false);
 });
 
+test("syncOut treats changes removed by a clean filter as no changes", async () => {
+	const { a } = setup();
+	sh(a, "config", "filter.strip.clean", "jq --indent 2 'del(.v)'");
+	sh(a, "config", "filter.strip.smudge", "cat");
+	writeFileSync(join(a, ".gitattributes"), "pi/settings.json filter=strip\n");
+	writeFileSync(join(a, "pi", "settings.json"), '{\n  "packages": []\n}\n');
+	sh(a, "add", ".gitattributes", "pi/settings.json");
+	sh(a, "commit", "-qm", "attrs");
+	writeFileSync(join(a, "pi", "settings.json"), '{"v": "1.0.0-longer", "packages": []}');
+	const head = sh(a, "rev-parse", "HEAD");
+	const res = await syncOut(a, "mbp");
+	assert.equal(res.committed, false);
+	assert.equal(res.reason, "no changes");
+	assert.equal(sh(a, "rev-parse", "HEAD"), head);
+});
+
 test("pullFastForward fast-forwards when behind", async () => {
 	const { a, b } = setup();
 	writeFileSync(join(a, "pi", "settings.json"), "{}\n");
