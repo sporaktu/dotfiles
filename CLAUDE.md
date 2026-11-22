@@ -56,6 +56,12 @@ home-manager switch --impure --flake .#mac   # or .#arch
 - `settings.json` is committed through a git clean filter (`.gitattributes`) that drops Pi's per-machine version keys
 - Never commit `~/.pi/agent/auth.json`, sessions, or memory; the repo is public
 
+### Claude Code
+- Config: `claude/.claude/{settings.json,CLAUDE.md,statusline.sh,hooks/,agents/}`, stowed to `~/.claude`
+- `hooks/dotfiles-sync.mts`: the Pi dotfiles-sync for Claude: pulls on session start, commits + pushes `claude/` on session end (main only, secret-scanned, `chore(claude):` subject). It imports the Pi `lib.ts`, so tests are shared. Every headless `claude` call (`claude mcp list`, `claude -p`) also ends a session and syncs. `CLAUDE_DOTFILES_SYNC=0` disables it
+- Pi parity: `advisorModel` matches Pi's advisor (Fable 5.2), the `cc-safety-net` plugin, and user-scope MCPs `web-access` (`npx -y pi-web-access`) and `pi-lens` (from Pi's npm dir). The MCPs live in `~/.claude.json`, which is not in the repo; re-add them with `claude mcp add -s user` on a new machine
+- `~/.claude/skills/glimpse` is generated from Pi's glimpseui package (untracked, like other installed skills)
+
 ### Window Management (macOS)
 - **yabai**: Tiling window manager (primary; space focus/move needs the scripting addition, which needs SIP partly disabled)
 - **skhd**: Hotkey daemon driving yabai
