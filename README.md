@@ -104,3 +104,21 @@ configs automatically:
 
 Once everything is installed you can launch a new terminal and fish along with starship will be active. Applications like Kitty or Ghostty will automatically pick up the configuration from `~/.config` once the files are linked.
 
+---
+
+## Pi coding agent
+
+Pi's config lives in `pi/` and is linked into `~/.pi` (auth, sessions and installed packages stay local). The `dotfiles-sync` extension keeps machines in step: when Pi starts it fast-forwards this repo, and when Pi quits it commits and pushes changes under `pi/` (only on `main`, never other files, blocked if anything looks like a secret).
+
+**New machine:** `./install.sh` runs `scripts/setup-pi.sh` for you.
+
+**Machine that already has these dotfiles:**
+
+```bash
+git -C ~/dotfiles pull
+~/dotfiles/scripts/setup-pi.sh   # needs git, stow, jq; safe to re-run
+```
+
+Existing `~/.pi/agent/settings.json`, `vision.json` and `~/.pi/acp.json` are kept as `*.pre-dotfiles`. Restart Pi afterwards. Until the config is linked, new fish shells print a reminder.
+
+Set `PI_DOTFILES_SYNC=0` to turn syncing off on a machine. Problems (pull not a fast-forward, a blocked commit) show as `dotfiles ⚠` in Pi's status line with a message.

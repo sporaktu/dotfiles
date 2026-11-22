@@ -50,6 +50,12 @@ home-manager switch --impure --flake .#mac   # or .#arch
 - Claude Code: `tuios integration install claude-code` writes hooks into `settings.json` and a tuios skill; `claude-teams` runs agent teams in panes through `tuios tmux-shim`
 - **tmux**: Previous multiplexer; config kept in `tmux/` but not installed or stowed by `install.sh`
 
+### Pi Coding Agent
+- Config: `pi/.pi/agent/{settings.json,vision.json,extensions/}` and `pi/.pi/acp.json`, linked by `scripts/setup-pi.sh` (also run by `install.sh`)
+- `extensions/dotfiles-sync/`: pulls on Pi start, commits + pushes `pi/` on quit (main only, secret-scanned); tests: `node --test pi/.pi/agent/extensions/dotfiles-sync/lib.test.ts`
+- `settings.json` is committed through a git clean filter (`.gitattributes`) that drops Pi's per-machine version keys
+- Never commit `~/.pi/agent/auth.json`, sessions, or memory; the repo is public
+
 ### Window Management (macOS)
 - **yabai**: Tiling window manager (primary; space focus/move needs the scripting addition, which needs SIP partly disabled)
 - **skhd**: Hotkey daemon driving yabai

@@ -98,11 +98,7 @@ fi
 
 # Stow configs that use ~/  (APP/.APP/ structure)
 stow --dir="$DOTFILES_DIR" --target="$HOME" claude
-# Create ~/.pi/agent first so stow links only extensions/, not the whole dir (it holds auth and sessions)
-mkdir -p "$HOME/.pi/agent"
-stow --dir="$DOTFILES_DIR" --target="$HOME" pi
-# Commit Pi settings without per-machine version fields (see .gitattributes; needs jq)
-git -C "$DOTFILES_DIR" config filter.pi-settings.clean "jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)'"
-git -C "$DOTFILES_DIR" config filter.pi-settings.smudge cat
+# Pi coding agent config + dotfiles-sync (safe to re-run on existing machines)
+"$DOTFILES_DIR/scripts/setup-pi.sh"
 
 echo "Installation complete. Log out and back in for shell changes to take effect."
