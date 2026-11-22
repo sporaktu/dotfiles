@@ -98,5 +98,8 @@ fi
 
 # Stow configs that use ~/  (APP/.APP/ structure)
 stow --dir="$DOTFILES_DIR" --target="$HOME" claude
+# Create ~/.pi/agent first so stow links only extensions/, not the whole dir (it holds auth and sessions)
+mkdir -p "$HOME/.pi/agent"
+stow --dir="$DOTFILES_DIR" --target="$HOME" pi
 
 echo "Installation complete. Log out and back in for shell changes to take effect."
