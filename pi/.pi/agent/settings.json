@@ -22,18 +22,6 @@
     "npm:@agimon-ai/po-ui",
     "git:github.com/obra/superpowers"
   ],
-  "lastChangelogVersion": "1.6.0",
-  "extensionChangelogVersions": {
-    "{\"source\":\"npm:pi-mcp-adapter\",\"scope\":\"user\"}": "7.0.1",
-    "{\"source\":\"npm:pi-web-access\",\"scope\":\"user\"}": "0.48.0",
-    "{\"source\":\"npm:pi-subagents\",\"scope\":\"user\"}": "0.89.2",
-    "{\"source\":\"npm:@onkernel/browser-loop\",\"scope\":\"user\"}": "0.12.1",
-    "{\"source\":\"npm:pi-lens\",\"scope\":\"user\"}": "4.5.1",
-    "{\"source\":\"npm:pi-memory\",\"scope\":\"user\"}": "0.4.2",
-    "{\"source\":\"npm:pi-advisor-flow\",\"scope\":\"user\"}": "0.17.0",
-    "{\"source\":\"npm:@gotgenes/pi-anthropic-auth\",\"scope\":\"user\"}": "3.6.0",
-    "{\"source\":\"npm:@heyhuynhgiabuu/pi-pretty\",\"scope\":\"user\"}": "0.10.2"
-  },
   "extensions": [
     "-builtin:mcp"
   ]

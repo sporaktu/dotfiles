@@ -1,0 +1,2 @@
+# Strip Pi's per-machine version bookkeeping when committing (filter set up by install.sh)
+pi/.pi/agent/settings.json filter=pi-settings
