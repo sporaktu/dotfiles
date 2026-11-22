@@ -2,7 +2,8 @@
  * Pi status line — a port of ~/dotfiles/claude/.claude/statusline.sh.
  * It replaces Pi's built-in footer with:
  *   Line 1: model (thinking level) │ project (branch) │ session cost │ context bar + makeup of the last call
- *   Line 2: session tokens by type, plus LLM usage from tools (advisor etc.) and compaction / cache warming
+ *   Line 2: Σ tokens and cost over every source (main agent, advisor, subagents, workflows, fabric
+ *           classifiers, compaction / cache warming); plugins that report no usage are left out
  *   Line 3+: subagents (pi-subagents), shown once the session has started one: active and used counts, then one row per running agent
  *   Next:   plan rate limits (5h / 7d), shown only when the provider sends the headers (Anthropic OAuth, Codex)
  *   Last:   other extensions' setStatus() texts, which the built-in footer would have shown
@@ -44,11 +45,14 @@ function dur(ms: number): string {
 	return `${Math.floor(s / 3600)}h${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}m`;
 }
 
-const pctColor = (p: number) => (p >= 80 ? RED : p >= 50 ? YEL : GRN);
+function pctColor(p: number) {
+	if (p >= 80) return RED;
+	return p >= 50 ? YEL : GRN;
+}
 
 function clip(s: string, n: number): string {
 	// Labels can come from the model, so strip control characters before printing them
-	const t = s.replace(/[\x00-\x1f\x7f]/g, "");
+	const t = [...s].filter((ch) => ch.charCodeAt(0) > 0x1f && ch.charCodeAt(0) !== 0x7f).join("");
 	return t.length > n ? `${t.slice(0, n - 1)}…` : t;
 }
 
@@ -100,7 +104,9 @@ function subagentLabel(args: any): string {
 // ── Rate-limit headers ───────────────────────────────────────────────────────
 
 function num(v: unknown): number | undefined {
-	const n = typeof v === "string" ? Number.parseFloat(v) : typeof v === "number" ? v : Number.NaN;
+	let n = Number.NaN;
+	if (typeof v === "string") n = Number.parseFloat(v);
+	else if (typeof v === "number") n = v;
 	return Number.isFinite(n) ? n : undefined;
 }
 
@@ -122,9 +128,116 @@ function readLimits(headers: Record<string, string | string[] | undefined>) {
 		const u = num(get(`x-codex-${win}-used-percent`));
 		if (u !== undefined) {
 			const after = num(get(`x-codex-${win}-reset-after-seconds`));
-			limits[key] = { pct: u, reset: after !== undefined ? Date.now() + after * 1000 : undefined };
+			limits[key] = { pct: u, reset: after === undefined ? undefined : Date.now() + after * 1000 };
 		}
 	}
+}
+
+// ── Usage from plugins ─────────────────────────────────────────────────────────────
+// Each plugin reports usage in its own shape and place. Every record has a stable key so a
+// call seen both live and in the saved session is counted once.
+
+type Src = "advisor" | "subagents" | "workflows" | "tools";
+type Rec = { key: string; src: Src; label: string; usage: Usage };
+
+/** Custom entry type holding usage seen only through live events (nested tools, background runs) */
+const RECORD = "statusline-usage";
+const recorded = new Set<string>();
+let live = false;
+
+/** Pi Usage, advisor-flow snapshots, pi-subagents and workflow usage all become a Pi Usage */
+function norm(u: any): Usage | undefined {
+	if (!u || typeof u !== "object") return undefined;
+	const n = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+	const cost = typeof u.cost === "number" ? u.cost : n(u.cost?.total);
+	const out: Usage = {
+		input: n(u.input),
+		output: n(u.output),
+		cacheRead: n(u.cacheRead),
+		cacheWrite: n(u.cacheWrite),
+		reasoning: n(u.reasoning),
+		totalTokens: 0,
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: cost },
+	};
+	return out.input + out.output + out.cacheRead + out.cacheWrite + cost > 0 ? out : undefined;
+}
+
+/** pi-subagents child results (foreground details, bg_wait completions, async-complete events) */
+function subRecords(runId: unknown, results: any[]): Rec[] {
+	const out: Rec[] = [];
+	results.forEach((r, i) => {
+		const usage = norm(r?.usage);
+		const run = r?.runId ?? runId;
+		if (usage && run) out.push({ key: `sub:${run}:${r?.index ?? i}`, src: "subagents", label: String(r?.agent ?? "subagent"), usage });
+	});
+	return out;
+}
+
+function fromTool(name: string, id: string, usage: unknown, details: any): Rec[] {
+	const out: Rec[] = [];
+	if (Array.isArray(details?.results)) out.push(...subRecords(details.runId ?? id, details.results));
+	if (Array.isArray(details?.completions)) {
+		for (const c of details.completions) if (Array.isArray(c?.results)) out.push(...subRecords(c.runId ?? c.id, c.results));
+	}
+	const wf = norm(details?.tokenUsage);
+	if (name === "workflow" && wf) out.push({ key: `wf:${details.runId ?? id}`, src: "workflows", label: "workflow", usage: wf });
+	if (name === "ask_advisor") {
+		const u = norm(usage) ?? norm(details?.usage);
+		if (u) out.push({ key: `tool:${id}`, src: "advisor", label: "advisor", usage: u });
+	} else {
+		// fabric_exec carries its classifier / approval-model usage here
+		const u = norm(usage);
+		if (u) out.push({ key: `tool:${id}`, src: "tools", label: name === "fabric_exec" ? "fabric" : name, usage: u });
+	}
+	return out;
+}
+
+function record(pi: ExtensionAPI, recs: Rec[]) {
+	if (!live) return;
+	for (const r of recs) {
+		if (recorded.has(r.key)) continue;
+		recorded.add(r.key);
+		pi.appendEntry(RECORD, r);
+	}
+	if (recs.length) requestRender?.();
+}
+
+const ADVISOR_MESSAGES = new Set(["advisor-loop-result", "advisor-turn-gate-result", "advisor-manual-result"]);
+
+/** Every plugin usage record in the session, deduplicated by key */
+function collect(entries: any[]): Map<string, Rec> {
+	const recs = new Map<string, Rec>();
+	const add = (r: Rec) => recs.has(r.key) || recs.set(r.key, r);
+	for (const e of entries) {
+		if (e.type === "message" && e.message.role === "toolResult") {
+			const m = e.message;
+			for (const r of fromTool(m.toolName ?? "tool", m.toolCallId ?? e.id, m.usage, m.details)) add(r);
+		} else if (e.type === "custom_message" && ADVISOR_MESSAGES.has(e.customType)) {
+			const u = norm(e.details?.usage);
+			if (u) add({ key: `adv:${e.id}`, src: "advisor", label: "advisor", usage: u });
+		} else if (e.type === "custom" && e.customType === "advisor-scout-result") {
+			const u = norm(e.data?.usage);
+			if (u) add({ key: `adv:${e.id}`, src: "advisor", label: "advisor", usage: u });
+		} else if (e.type === "custom" && e.customType === RECORD && e.data?.key) {
+			const u = norm(e.data.usage);
+			if (u) add({ ...e.data, usage: u });
+		}
+	}
+	return recs;
+}
+
+/** Subagent runs far above the rest: at least 3× the median and a real share of the bill */
+function findOutliers(subs: Rec[], totalCost: number, totalTokens: number): Rec[] {
+	if (subs.length < 2) return [];
+	const byCost = totalCost > 0;
+	const size = (r: Rec) => (byCost ? r.usage.cost.total : all(r.usage));
+	const sorted = subs.map(size).sort((a, b) => a - b);
+	const median = sorted[Math.floor(sorted.length / 2)];
+	const floor = byCost ? Math.max(1, totalCost * 0.2) : totalTokens * 0.2;
+	return subs
+		.filter((r) => size(r) >= 3 * median && size(r) >= floor)
+		.sort((a, b) => size(b) - size(a))
+		.slice(0, 3);
 }
 
 // ── Rendering ────────────────────────────────────────────────────────────────
@@ -153,24 +266,28 @@ const all = (u: Usage) => u.input + u.output + u.cacheRead + u.cacheWrite;
 function render(pi: ExtensionAPI, ctx: ExtensionContext, branch: string | null, statuses: ReadonlyMap<string, string>): string[] {
 	// Session totals over every entry, matching the built-in footer (branches and compacted history count too)
 	const main = zero();
-	const toolUse = new Map<string, Usage & { n: number }>();
 	const bg = zero();
 	let calls = 0;
 	let last: Usage | undefined;
-	for (const e of ctx.sessionManager.getEntries() as any[]) {
+	const entries = ctx.sessionManager.getEntries() as any[];
+	for (const e of entries) {
 		if (e.type === "message" && e.message.role === "assistant") {
 			const u = (e.message as AssistantMessage).usage;
 			addUsage(main, u);
 			calls++;
-		} else if (e.type === "message" && e.message.role === "toolResult" && e.message.usage) {
-			const name = e.message.toolName ?? "tool";
-			const t = toolUse.get(name) ?? Object.assign(zero(), { n: 0 });
-			addUsage(t, e.message.usage);
-			t.n++;
-			toolUse.set(name, t);
 		} else if (e.type === "usage" || ((e.type === "compaction" || e.type === "branch_summary") && e.usage)) {
 			addUsage(bg, e.usage);
 		}
+	}
+	// Plugin usage grouped by source (tools are grouped by label)
+	const recs = [...collect(entries).values()];
+	const groups = new Map<string, Usage & { n: number }>();
+	for (const r of recs) {
+		const name = r.src === "tools" ? r.label : r.src;
+		const g = groups.get(name) ?? Object.assign(zero(), { n: 0 });
+		addUsage(g, r.usage);
+		g.n++;
+		groups.set(name, g);
 	}
 	// Last call = the latest assistant message on the current branch
 	const br = ctx.sessionManager.getBranch() as any[];
@@ -183,7 +300,12 @@ function render(pi: ExtensionAPI, ctx: ExtensionContext, branch: string | null, 
 	}
 
 	let cost = main.cost.total + bg.cost.total;
-	for (const t of toolUse.values()) cost += t.cost.total;
+	let total = all(main) + all(bg);
+	for (const g of groups.values()) {
+		cost += g.cost.total;
+		total += all(g);
+	}
+	const outliers = findOutliers(recs.filter((r) => r.src === "subagents"), cost, total);
 
 	// ── Line 1
 	const m = ctx.model;
@@ -217,18 +339,20 @@ function render(pi: ExtensionAPI, ctx: ExtensionContext, branch: string | null, 
 
 	// ── Line 2
 	let line2: string;
-	if (calls === 0 && toolUse.size === 0) {
+	if (calls === 0 && groups.size === 0) {
 		line2 = DIM("session tokens: none yet");
 	} else {
-		let total = all(main) + all(bg);
-		for (const t of toolUse.values()) total += all(t);
 		let out = h(main.output);
 		if (main.reasoning) out += ` ${DIM(`(thinking ${h(main.reasoning)})`)}`;
 		line2 = `${BOLD(`Σ ${h(total)}`)} tokens${SEP}`;
-		line2 += `${CYN("cache read")} ${h(main.cacheRead)} · ${CYN("cache write")} ${h(main.cacheWrite)} · ${CYN("input")} ${h(main.input)} · ${MAG("output")} ${out}`;
-		for (const [name, t] of [...toolUse].sort((a, b) => all(b[1]) - all(a[1]))) {
-			const label = name === "ask_advisor" ? "advisor" : name;
-			line2 += `${SEP}${YEL(label)} in ${h(t.input + t.cacheRead + t.cacheWrite)} · out ${h(t.output)} ${DIM(`(${t.n}×)`)}`;
+		line2 += `${BOLD("main")} ${CYN("cache read")} ${h(main.cacheRead)} · ${CYN("cache write")} ${h(main.cacheWrite)} · ${CYN("input")} ${h(main.input)} · ${MAG("output")} ${out}`;
+		for (const [name, g] of [...groups].sort((a, b) => b[1].cost.total - a[1].cost.total || all(b[1]) - all(a[1]))) {
+			const n = name === "subagents" ? `${g.n} runs` : `${g.n}×`;
+			line2 += `${SEP}${YEL(name)} ${h(all(g))} ${GRN(`$${g.cost.total.toFixed(2)}`)} ${DIM(`(${n})`)}`;
+			// Single subagent runs are shown only when they dwarf the rest
+			if (name === "subagents") {
+				for (const o of outliers) line2 += ` ${RED(`⚠ ${clip(o.label, 24)} ${h(all(o.usage))} $${o.usage.cost.total.toFixed(2)}`)}`;
+			}
 		}
 		if (all(bg) > 0) line2 += `${SEP}${DIM(`compaction/warm ${h(all(bg))}`)}`;
 		line2 += `${SEP}${DIM(`${calls} API calls`)}`;
@@ -266,9 +390,11 @@ function render(pi: ExtensionAPI, ctx: ExtensionContext, branch: string | null, 
 	if (lim.length) lines.push(`${BOLD("limits")} ${lim.join(SEP)}`);
 
 	// ── Other extensions' statuses
-	if (statuses.size > 0) {
+	// advisor-flow's own usage status is already counted on line 2
+	const other = [...statuses.entries()].filter(([k]) => k !== "advisor-usage");
+	if (other.length > 0) {
 		lines.push(
-			[...statuses.entries()]
+			other
 				.sort(([a], [b]) => a.localeCompare(b))
 				.map(([, t]) => t.replace(/[\r\n\t]+/g, " "))
 				.join(" "),
@@ -301,6 +427,11 @@ export default function (pi: ExtensionAPI) {
 	};
 
 	pi.on("session_start", async (_e, ctx) => {
+		live = ctx.hasUI;
+		recorded.clear();
+		for (const e of ctx.sessionManager.getEntries() as any[]) {
+			if (e.type === "custom" && e.customType === RECORD && e.data?.key) recorded.add(e.data.key);
+		}
 		running.clear();
 		used = 0;
 		failed = 0;
@@ -330,7 +461,14 @@ export default function (pi: ExtensionAPI) {
 			startAgent({ id: e.toolCallId, label: subagentLabel(e.args), depth: 1, started: Date.now(), async: false });
 		}
 	});
-	pi.on("tool_execution_end", async (e) => endAgent(e.toolCallId, !e.isError));
+	pi.on("tool_execution_end", async (e) => {
+		endAgent(e.toolCallId, !e.isError);
+		// Tools nested in fabric_exec are never saved as tool results, so record their usage here
+		const ev = e as any;
+		if (ev.parentToolCallId && ev.result) {
+			record(pi, fromTool(e.toolName, e.toolCallId, ev.result.usage, ev.result.details));
+		}
+	});
 
 	pi.events.on("subagent:async-started", (p: any) => {
 		const id = p?.id ?? p?.runId;
@@ -340,6 +478,8 @@ export default function (pi: ExtensionAPI) {
 	});
 	pi.events.on("subagent:async-complete", (p: any) => {
 		endAgent(p?.id ?? p?.runId, p?.success !== false && p?.state !== "failed");
+		// Background runs report usage only on this event
+		if (Array.isArray(p?.results)) record(pi, subRecords(p.runId ?? p.id, p.results));
 	});
 
 	pi.registerCommand("statusline", {
