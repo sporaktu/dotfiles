@@ -20,7 +20,8 @@
     "npm:@heyhuynhgiabuu/pi-pretty",
     "npm:pi-fabric",
     "npm:@agimon-ai/po-ui",
-    "git:github.com/obra/superpowers"
+    "git:github.com/obra/superpowers",
+    "npm:pi-goal-x"
   ],
   "extensions": [
     "-builtin:mcp"
