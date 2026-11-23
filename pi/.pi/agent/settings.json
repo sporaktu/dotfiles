@@ -24,5 +24,25 @@
   ],
   "extensions": [
     "-builtin:mcp"
-  ]
+  ],
+  "modelThinkingLevels": {
+    "anthropic/claude-fable-5": "medium",
+    "anthropic/claude-fable-5-1": "medium",
+    "anthropic/claude-fable-5-2": "medium",
+    "anthropic/claude-haiku-4-5": "medium",
+    "anthropic/claude-haiku-4-5-20251001": "medium",
+    "anthropic/claude-haiku-5-5": "medium",
+    "anthropic/claude-opus-4-5": "medium",
+    "anthropic/claude-opus-4-5-20251101": "medium",
+    "anthropic/claude-opus-4-6": "medium",
+    "anthropic/claude-opus-4-7": "medium",
+    "anthropic/claude-opus-4-8": "medium",
+    "anthropic/claude-opus-5": "medium",
+    "anthropic/claude-opus-5-5": "medium",
+    "anthropic/claude-sonnet-4-5": "medium",
+    "anthropic/claude-sonnet-4-5-20250929": "medium",
+    "anthropic/claude-sonnet-4-6": "medium",
+    "anthropic/claude-sonnet-5": "medium",
+    "anthropic/claude-sonnet-5-5": "medium"
+  }
 }
