@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/gray/.local/lib/node_modules/billion-context/dist/claude-native-bootstrap.js"
+            "command": "node $HOME/.local/lib/node_modules/billion-context/dist/claude-native-bootstrap.js"
           }
         ]
       },
@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/gray/.claude/hooks/dotfiles-sync.mts start",
+            "command": "node $HOME/.claude/hooks/dotfiles-sync.mts start",
             "timeout": 30
           }
         ]
@@ -188,7 +188,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/gray/.claude/hooks/dotfiles-sync.mts end",
+            "command": "node $HOME/.claude/hooks/dotfiles-sync.mts end",
             "timeout": 30
           }
         ]
@@ -208,7 +208,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node /Users/gray/.local/lib/node_modules/billion-context/dist/claude-subagent-hook.js"
+            "command": "node $HOME/.local/lib/node_modules/billion-context/dist/claude-subagent-hook.js"
           }
         ]
       }
