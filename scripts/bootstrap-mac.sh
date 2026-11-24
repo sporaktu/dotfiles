@@ -10,6 +10,7 @@
 #      Copies, not symlinks: your config is yours and never syncs with this repo.
 #      Any file it replaces is kept as <file>.bak-<timestamp>.
 # What it leaves out on purpose: the dotfiles-sync extension (it would commit and push a ~/dotfiles repo),
+# @gotgenes/pi-anthropic-auth (Claude Code impersonation, against Anthropic's terms),
 # the tuios extension (needs tuios), Claude Code settings, shell, terminal and window manager configs.
 set -euo pipefail
 
@@ -82,8 +83,10 @@ install_file() {
 }
 
 say "Installing Pi config into ~/.pi"
-# Drop per-machine version bookkeeping so Pi shows its own changelogs.
-jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)' \
+# Drop per-machine version bookkeeping so Pi shows its own changelogs, and drop
+# @gotgenes/pi-anthropic-auth: it disguises Pi as Claude Code, which breaks Anthropic's terms.
+jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)
+  | .packages |= map(select(. != "npm:@gotgenes/pi-anthropic-auth"))' \
   "$src/agent/settings.json" >"$tmp/settings.json"
 install_file "$tmp/settings.json" "$HOME/.pi/agent/settings.json"
 install_file "$src/agent/vision.json" "$HOME/.pi/agent/vision.json"
@@ -95,7 +98,9 @@ cat <<'EOF'
 Next steps:
   1. Open a new terminal and run:  pi
      The first start installs the Pi packages listed in ~/.pi/agent/settings.json; give it a minute.
-  2. In Pi, run /login and sign in with your LT Anthropic account (no personal API keys).
+  2. Get an Anthropic API key from the LT org (ask DevOps), then in Pi run /login, pick Anthropic
+     and choose the API key option. Do not use the Claude account (OAuth) sign-in: it signs in
+     as Claude Code, which Anthropic's terms do not allow for other tools.
   3. Optional: connect Atlassian by asking Pi to install the MCP server https://mcp.atlassian.com/v1/mcp
 
 To update later, run the one-liner from the Confluence page again; it keeps backups of anything it replaces.
