@@ -10,7 +10,6 @@
 #      Copies, not symlinks: your config is yours and never syncs with this repo.
 #      Any file it replaces is kept as <file>.bak-<timestamp>.
 # What it leaves out on purpose: the dotfiles-sync extension (it would commit and push a ~/dotfiles repo),
-# @gotgenes/pi-anthropic-auth (Claude Code impersonation, against Anthropic's terms),
 # the tuios extension (needs tuios), Claude Code settings, shell, terminal and window manager configs.
 set -euo pipefail
 
@@ -83,10 +82,8 @@ install_file() {
 }
 
 say "Installing Pi config into ~/.pi"
-# Drop per-machine version bookkeeping so Pi shows its own changelogs, and drop
-# @gotgenes/pi-anthropic-auth: it disguises Pi as Claude Code, which breaks Anthropic's terms.
-jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)
-  | .packages |= map(select(. != "npm:@gotgenes/pi-anthropic-auth"))' \
+# Drop per-machine version bookkeeping so Pi shows its own changelogs.
+jq --indent 2 'del(.lastChangelogVersion, .extensionChangelogVersions)' \
   "$src/agent/settings.json" >"$tmp/settings.json"
 install_file "$tmp/settings.json" "$HOME/.pi/agent/settings.json"
 install_file "$src/agent/vision.json" "$HOME/.pi/agent/vision.json"
